@@ -83,6 +83,8 @@ section.view{display:flex;flex-direction:column;gap:22px}
 .btn[disabled]{opacity:.55;cursor:default}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:.88rem;cursor:pointer;font-weight:500}
+.chipgroup{display:flex;flex-direction:column;gap:8px}
+.chip[disabled]{cursor:default;opacity:.75}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .pill{display:inline-block;font-size:.74rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
 .pill.acc{background:var(--accent-soft);color:var(--accent)}
@@ -131,6 +133,29 @@ section.view{display:flex;flex-direction:column;gap:22px}
 .grocery label{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
 .grocery label.done span{text-decoration:line-through;color:var(--muted)}
 .grocery .cnt{margin-left:auto;font-size:.75rem;color:var(--muted)}
+.logged{display:flex;flex-direction:column;gap:10px}
+.loghead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.vs{display:flex;align-items:center;gap:14px}
+.mini{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dial.sm{width:62px;height:62px}
+.dial.sm div{width:48px;height:48px}
+.dial.sm b{font-size:1.2rem}
+.tablewrap{overflow-x:auto}
+.cmp{border-collapse:collapse;width:100%;font-size:.88rem}
+.cmp th,.cmp td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right}
+.cmp th[scope=row]{text-align:left;font-weight:500;color:var(--muted)}
+.cmp thead th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.why{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;font-size:.88rem}
+.why li{padding-left:18px;position:relative}
+.why li::before{position:absolute;left:0;font-weight:800}
+.why li.up::before{content:"+";color:var(--exc)}
+.why li.down::before{content:"−";color:var(--bad)}
+.logform{display:flex;flex-direction:column;gap:10px}
+.presets{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.presets .chip{flex:none}
+.chip.check{display:inline-flex;align-items:center;gap:6px}
+.chip.check input{accent-color:var(--accent);margin:0}
+.chip.check:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .warn{background:var(--poor-soft);border-radius:10px;padding:10px 12px;font-size:.88rem}
 
 /* profile */
@@ -250,6 +275,14 @@ a{color:var(--accent)}
 // Traits: gi low-glycemic, na low sodium, fi high fiber, o3 omega-3, fe iron-rich, ai anti-inflammatory, fm low-FODMAP, lc low-carb/keto,
 //         hp high protein, lf lower fat, gn gentle on the stomach, sf low saturated fat, tr treat, pr highly processed
 // Aisles: p produce, m meat & seafood, d dairy/eggs/alternatives, g bread & grains, c pantry, f frozen
+// Extra codes: L high-lactose dairy, A peanut, B beans/legumes, R grains (incl. oats, rice, corn, quinoa), Z sesame, U added sugar. Trait ca = calcium-rich.
+const RECIPE_EXTRA={
+ b1:{x:"R",t:"ca"},b2:{x:"R",t:"ca"},b3:{x:"L",t:"ca"},b4:{x:"B",t:"ca"},b5:{x:"R"},b6:{t:"ca"},b7:{x:"R"},b8:{x:"R",t:"ca"},
+ b9:{x:"L",t:"ca"},b10:{x:"LABR",drop:"N",t:"ca"},b11:{x:"LRU"},
+ l1:{x:"BZ"},l2:{x:"R"},l4:{x:"RZB"},l5:{x:"BR"},l7:{x:"BR"},l8:{x:"R",t:"ca"},l9:{x:"R",t:"ca"},l10:{x:"RU"},l12:{x:"R"},l13:{x:"BR"},l14:{x:"AR",drop:"N"},
+ d1:{x:"R"},d2:{x:"B"},d4:{x:"BR"},d5:{x:"R"},d6:{x:"B"},d7:{x:"R",t:"ca"},d9:{x:"BR"},d10:{x:"R"},d11:{x:"RU"},d14:{x:"R"},d15:{x:"BZ"},d16:{t:"ca"},
+ s2:{x:"BZ"},s5:{x:"L",t:"ca"},s6:{x:"B",t:"ca"},s7:{x:"B"},s8:{t:"ca"},s9:{x:"U"},s10:{x:"U"},s11:{x:"AB",drop:"N"},s12:{x:"R"}
+};
 const R = [
  // breakfast
  {id:"b1",m:"b",n:"Chia oats with blueberries",k:380,p:14,c:55,f:11,fi:9,na:90,x:"",t:"gi fi na ai sf gn",i:"g:Rolled oats (certified GF if needed)|c:Chia seeds|f:Frozen blueberries|d:Unsweetened oat milk|c:Cinnamon",h:"Stir oats, chia and oat milk in a jar, top with berries and cinnamon, chill overnight."},
@@ -310,33 +343,71 @@ const R = [
  {id:"s10",m:"s",n:"Potato chips & a soda",k:420,p:4,c:60,f:18,fi:2,na:380,x:"",t:"tr pr",i:"c:Potato chips|c:Soda",h:"An occasional treat."},
  {id:"s11",m:"s",n:"Banana with peanut butter",k:270,p:7,c:33,f:16,fi:4,na:80,x:"N",t:"gn",i:"p:Bananas|c:Peanut butter",h:"Slice and spread."},
  {id:"s12",m:"s",n:"Rice cakes with avocado",k:180,p:3,c:20,f:10,fi:4,na:60,x:"",t:"fm gn na",i:"g:Brown rice cakes|p:Avocado",h:"Mash avocado on rice cakes, add pepper."},
- {id:"s13",m:"s",n:"Toasted pumpkin seeds",k:180,p:9,c:4,f:15,fi:2,na:5,x:"",t:"lc fe fm na",i:"c:Pumpkin seeds",h:"About 3 tablespoons."}
-].map(r=>({...r,tr:r.t.split(" ")}));
+ {id:"s13",m:"s",n:"Toasted pumpkin seeds",k:180,p:9,c:4,f:15,fi:2,na:5,x:"",t:"lc fe fm na",i:"c:Pumpkin seeds",h:"About 3 tablespoons."},
+ {id:"b14",m:"b",n:"Sweet potato & turkey breakfast hash",k:420,p:30,c:34,f:17,fi:6,na:380,x:"P",t:"hp fe gi gn",i:"p:Sweet potatoes|m:Ground turkey|p:Baby spinach|c:Olive oil|p:Thyme",h:"Crisp diced sweet potato in olive oil, add turkey and thyme, wilt in spinach."},
+ {id:"b15",m:"b",n:"Veggie egg muffins (3)",k:300,p:21,c:7,f:20,fi:2,na:360,x:"E",t:"lc hp fm gn",i:"d:Eggs|p:Bell peppers|p:Zucchini|p:Chives",h:"Whisk eggs with diced veg, bake in a muffin tin at 350°F (175°C) for 20 min. Keeps 4 days."},
+ {id:"l15",m:"l",n:"Ginger chicken lettuce wraps",k:410,p:38,c:12,f:22,fi:3,na:450,x:"P",t:"lc hp fm gn",i:"m:Ground chicken|p:Butter lettuce|p:Cucumber|p:Ginger|p:Carrots|c:Olive oil",h:"Brown chicken with grated ginger, spoon into lettuce cups, top with cucumber and carrot."},
+ {id:"l16",m:"l",n:"Shrimp, avocado & citrus salad",k:430,p:30,c:18,f:26,fi:8,na:520,x:"S",t:"lc hp fm ai",i:"m:Cooked shrimp|p:Avocado|p:Orange|p:Mixed greens|c:Olive oil|p:Lime",h:"Toss shrimp, avocado and orange segments with greens, lime and olive oil."},
+ {id:"d17",m:"d",n:"Herb-crusted cod with zucchini & potatoes",k:500,p:40,c:42,f:16,fi:6,na:360,x:"F",t:"hp lf na gn fm sf",i:"m:Cod fillets|p:Zucchini|p:Baby potatoes|p:Parsley|p:Lemon|c:Olive oil",h:"Roast potatoes 20 min, add zucchini and herb-topped cod, roast 12 more."},
+ {id:"d18",m:"d",n:"Turkey-stuffed zucchini boats",k:470,p:40,c:16,f:26,fi:5,na:480,x:"P",t:"lc hp gn",i:"p:Zucchini|m:Ground turkey|c:Marinara (no sugar added)|p:Basil",h:"Hollow zucchini halves, fill with turkey cooked in marinara, bake 20 min."},
+ {id:"s14",m:"s",n:"Cucumber & smoked salmon bites",k:150,p:14,c:4,f:8,fi:1,na:520,x:"F",t:"lc hp o3 fm",i:"p:Cucumber|m:Smoked salmon|p:Dill",h:"Top cucumber rounds with salmon and dill."},
+ {id:"s15",m:"s",n:"Orange & a few walnuts",k:190,p:4,c:18,f:13,fi:4,na:0,x:"N",t:"fi gi na ai o3",i:"p:Oranges|c:Walnuts",h:"One orange and about 7 walnut halves."}
+].map(r=>{
+  const e=RECIPE_EXTRA[r.id]||{};
+  let x=r.x; if(e.drop) x=[...x].filter(ch=>!e.drop.includes(ch)).join("");
+  return {...r,x:x+(e.x||""),tr:(r.t+(e.t?" "+e.t:"")).split(" ")};
+});
 const BYID = Object.fromEntries(R.map(r=>[r.id,r]));
 const MEALS = [{k:"b",n:"Breakfast",share:.25},{k:"l",n:"Lunch",share:.32},{k:"d",n:"Dinner",share:.33},{k:"s",n:"Snack",share:.10}];
-const TRAIT_LABEL = {gi:"Low glycemic",na:"Low sodium",fi:"High fiber",o3:"Omega-3",fe:"Iron-rich",ai:"Anti-inflammatory",fm:"Low FODMAP",lc:"Low carb",hp:"High protein",lf:"Lower fat",gn:"Gentle",sf:"Low sat. fat",tr:"Treat",pr:"Processed"};
+const TRAIT_LABEL = {gi:"Low glycemic",na:"Low sodium",fi:"High fiber",o3:"Omega-3",fe:"Iron-rich",ai:"Anti-inflammatory",fm:"Low FODMAP",lc:"Low carb",ca:"Calcium-rich",hp:"High protein",lf:"Lower fat",gn:"Gentle",sf:"Low sat. fat",tr:"Treat",pr:"Processed"};
 const AISLES = {p:"Produce",m:"Meat & seafood",d:"Dairy, eggs & tofu",g:"Bread & grains",c:"Pantry",f:"Frozen"};
 
+const COND_GROUPS=["Heart & metabolism","Digestion","Body & life stage","Other goals"];
 const CONDITIONS = [
- {id:"sugar",n:"Blood sugar / type 2 diabetes",want:["gi","fi"],carbCap:.4,tip:"Carbs are paired with fiber and protein to slow glucose spikes, and capped near 40% of calories."},
- {id:"bp",n:"High blood pressure",want:["na"],sodium:true,tip:"Meals lean under ~500 mg sodium each, toward a 1,500–2,300 mg day."},
- {id:"chol",n:"High cholesterol",want:["fi","o3","sf"],tip:"More soluble fiber (oats, beans, lentils) and oily fish; less saturated fat."},
- {id:"heart",n:"Heart health",want:["o3","na","sf"],sodium:true,tip:"Oily fish twice a week, low sodium, and unsaturated fats over saturated."},
- {id:"gut",n:"IBS / sensitive gut",want:["fm","gn"],tip:"Favors low-FODMAP, gently cooked meals. Add the Low-FODMAP restriction to make it strict."},
- {id:"reflux",n:"Acid reflux",want:["gn","lf"],tip:"Milder, lower-fat meals; spicy and very acidic dishes are pushed down the list."},
- {id:"pcos",n:"PCOS / insulin resistance",want:["gi","hp","ai"],carbCap:.4,tip:"Steady-carb, protein-forward meals with anti-inflammatory fats."},
- {id:"iron",n:"Low iron / anemia",want:["fe"],tip:"Iron-rich foods, ideally with vitamin C (citrus, peppers) to help absorption."},
- {id:"inflam",n:"Inflammation / joint pain",want:["ai","o3"],tip:"Omega-3s, colorful plants and olive oil; fewer processed foods."},
- {id:"liver",n:"Fatty liver",want:["gi","fi","sf"],tip:"Low added sugar, more fiber, less saturated fat. Treats are removed."},
- {id:"kidney",n:"Kidney health",want:["na"],sodium:true,tip:"Lower sodium. Protein and potassium needs depend on kidney function, so confirm targets with your care team."},
- {id:"energy",n:"Low energy / fatigue",want:["gi","fe","fi"],tip:"Slow-release carbs and iron-rich foods to keep energy steady."}
+ {id:"sugar",g:0,n:"Blood sugar / type 2 diabetes",want:["gi","fi"],carbCap:.4,tip:"Carbs are paired with fiber and protein to slow glucose spikes, and capped near 40% of calories."},
+ {id:"bp",g:0,n:"High blood pressure",want:["na"],sodium:true,tip:"Meals lean under ~500 mg sodium each, toward a 1,500–2,300 mg day."},
+ {id:"chol",g:0,n:"High cholesterol",want:["fi","o3","sf"],tip:"More soluble fiber (oats, beans, lentils) and oily fish; less saturated fat."},
+ {id:"heart",g:0,n:"Heart health",want:["o3","na","sf"],sodium:true,tip:"Oily fish twice a week, low sodium, and unsaturated fats over saturated."},
+ {id:"pcos",g:0,n:"PCOS / insulin resistance",want:["gi","hp","ai"],carbCap:.4,tip:"Steady-carb, protein-forward meals with anti-inflammatory fats."},
+ {id:"liver",g:0,n:"Fatty liver",want:["gi","fi","sf"],tip:"Low added sugar, more fiber, less saturated fat. Treats are removed."},
+ {id:"kidney",g:0,n:"Kidney health",want:["na"],sodium:true,tip:"Lower sodium. Protein and potassium needs depend on kidney function, so confirm targets with your care team."},
+ {id:"glp1",g:0,n:"On GLP-1 medication (e.g. semaglutide)",want:["hp","gn","lf"],tip:"Protein-first, lower-fat, gentle meals that are easier to eat with a smaller appetite. Eat protein first and stop when full."},
+ {id:"gout",g:0,n:"Gout / high uric acid",want:["fi","lf"],avoidX:"MS",avoidRe:/mackerel|sardine|anchov|tuna/i,sugarW:1.3,tip:"Fewer purine-rich foods (red meat, shellfish, oily fish) and less sugar. Low-fat dairy and plenty of water help."},
+ {id:"gut",g:1,n:"IBS / sensitive gut",want:["fm","gn"],tip:"Favors low-FODMAP, gently cooked meals. Add the Low-FODMAP restriction to make it strict."},
+ {id:"reflux",g:1,n:"Acid reflux / GERD",want:["gn","lf"],avoidRe:/curry|chili|fajita|salsa|tomato/i,tip:"Milder, lower-fat meals; spicy and acidic dishes are pushed down the list."},
+ {id:"celiac",g:1,n:"Celiac disease",want:["gn"],implies:["gf"],tip:"Every meal is gluten-free. Use certified gluten-free oats and watch for cross-contact when eating out."},
+ {id:"constip",g:1,n:"Constipation / regularity",want:["fi"],tip:"High-fiber meals every day. Raise fiber slowly and drink more water as you do."},
+ {id:"gallbl",g:1,n:"Gallbladder issues",want:["lf","gn"],fatMax:22,satW:1.4,tip:"Lower-fat meals spread through the day; large, fatty meals are pushed down the list."},
+ {id:"iron",g:2,n:"Low iron / anemia",want:["fe"],tip:"Iron-rich foods, ideally with vitamin C (citrus, peppers) to help absorption."},
+ {id:"preg",g:2,n:"Pregnancy / breastfeeding",want:["fe","ca","fi","hp"],avoidRe:/smoked salmon|tuna/i,tip:"Iron, calcium, fiber and protein come first; cold-smoked fish and tuna-heavy meals are pushed down. Follow your prenatal care team's advice."},
+ {id:"meno",g:2,n:"Menopause",want:["ca","sf","hp"],satW:1.3,tip:"Calcium and protein for bones and muscle, with heart-friendly fats."},
+ {id:"bone",g:2,n:"Bone health / osteoporosis",want:["ca","hp"],tip:"Calcium-rich foods at most meals. Ask your doctor about vitamin D."},
+ {id:"athlete",g:2,n:"Training / muscle recovery",want:["hp"],tip:"Protein spread across every meal; eat carbs around your workouts."},
+ {id:"inflam",g:3,n:"Inflammation / joint pain",want:["ai","o3"],tip:"Omega-3s, colorful plants and olive oil; fewer processed foods."},
+ {id:"energy",g:3,n:"Low energy / fatigue",want:["gi","fe","fi"],tip:"Slow-release carbs and iron-rich foods to keep energy steady."},
+ {id:"brain",g:3,n:"Brain health / focus",want:["o3","ai"],tip:"Oily fish, nuts, seeds and colorful plants, the pattern linked with better brain health."},
+ {id:"skin",g:3,n:"Skin health / acne",want:["ai","o3","gi"],sugarW:1.2,tip:"Low-glycemic, anti-inflammatory meals with less sugar."},
+ {id:"migraine",g:3,n:"Migraines",want:["gi"],avoidRe:/parmesan|feta|cheddar|smoked|pepperoni|chocolate|soy sauce|miso/i,tip:"Common triggers (aged cheese, cured meat, chocolate, soy sauce) are pushed down. Triggers vary, so keep a log. Regular meals help."},
+ {id:"stones",g:3,n:"Kidney stones",want:["na"],sodium:true,avoidRe:/spinach|almond|cashew|beet|rhubarb/i,tip:"Lower sodium and fewer high-oxalate foods. Pair calcium with meals and drink plenty of water."}
 ];
+const condById=id=>CONDITIONS.find(c=>c.id===id);
+const RESTR_GROUPS=["Eating style","Allergies & intolerances","Religious","Limits"];
 const RESTR = [
- {id:"vegetarian",n:"Vegetarian",ex:"MKPFS"},{id:"vegan",n:"Vegan",ex:"MKPFSDEH"},{id:"pescatarian",n:"Pescatarian",ex:"MKP"},
- {id:"gf",n:"Gluten-free",ex:"G"},{id:"df",n:"Dairy-free",ex:"D"},{id:"nut",n:"Nut-free",ex:"N"},{id:"egg",n:"Egg-free",ex:"E"},
- {id:"soy",n:"Soy-free",ex:"Y"},{id:"shell",n:"Shellfish-free",ex:"S"},{id:"halal",n:"Halal",ex:"K"},{id:"kosher",n:"Kosher-style",ex:"KSX"},
- {id:"fodmap",n:"Low-FODMAP",req:"fm"},{id:"keto",n:"Keto / very low carb",req:"lc"}
+ {id:"vegetarian",g:0,n:"Vegetarian",ex:"MKPFS"},{id:"vegan",g:0,n:"Vegan",ex:"MKPFSDEHL"},{id:"pescatarian",g:0,n:"Pescatarian",ex:"MKP"},
+ {id:"redmeat",g:0,n:"No red meat",ex:"MK"},{id:"fish",g:0,n:"No fish",ex:"F"},
+ {id:"paleo",g:0,n:"Paleo",ex:"GRDLBYUA",noTreat:true},{id:"whole30",g:0,n:"Whole30",ex:"GRDLBYUAH",noTreat:true},
+ {id:"med",g:0,n:"Mediterranean",prefer:["ai","o3","fi"],avoidX:"MK",noTreat:true},
+ {id:"gf",g:1,n:"Gluten-free",ex:"G"},{id:"df",g:1,n:"Dairy-free",ex:"DL"},{id:"lactose",g:1,n:"Lactose-free",ex:"L"},
+ {id:"nut",g:1,n:"Nut-free (incl. peanuts)",ex:"NA"},{id:"peanut",g:1,n:"Peanut-free",ex:"A"},{id:"egg",g:1,n:"Egg-free",ex:"E"},
+ {id:"soy",g:1,n:"Soy-free",ex:"Y"},{id:"shell",g:1,n:"Shellfish-free",ex:"S"},{id:"sesame",g:1,n:"Sesame-free",ex:"Z"},
+ {id:"fodmap",g:1,n:"Low-FODMAP",req:"fm"},
+ {id:"halal",g:2,n:"Halal",ex:"K"},{id:"kosher",g:2,n:"Kosher-style",ex:"KSX"},{id:"pork",g:2,n:"No pork",ex:"K"},
+ {id:"keto",g:3,n:"Keto / very low carb",req:"lc"},{id:"lowcarb",g:3,n:"Low carb",maxC:35},{id:"highprot",g:3,n:"High protein",req:"hp"},
+ {id:"lowfat",g:3,n:"Low fat",maxF:20},{id:"lowsodium",g:3,n:"Low sodium",maxNa:500},{id:"nosugar",g:3,n:"No added sugar",ex:"U",noTreat:true}
 ];
+const restrById=id=>RESTR.find(r=>r.id===id);
+/** Restrictions in force: the ones picked plus any a health condition requires (celiac → gluten-free). */
+const effRestr=p=>[...new Set([...p.restrictions,...p.conditions.flatMap(id=>condById(id)?.implies||[])])];
 const GOALS = [
  {id:"lose",n:"Lose weight",d:"Steady calorie deficit"},{id:"maintain",n:"Maintain",d:"Eat for your current weight"},
  {id:"gain",n:"Build muscle",d:"Small surplus, more protein"},{id:"energy",n:"More energy",d:"Steady blood sugar all day"},
@@ -352,7 +423,7 @@ const EXAMPLE_PROFILE = {sex:"female",age:34,heightCm:168,weightKg:82,goalKg:72,
 
 /* ---------------- state ---------------- */
 const S = {tab:"plan",day:(new Date().getDay()+6)%7,profile:{...EXAMPLE_PROFILE},isExample:true,seed:20261108,overrides:{},
-  draft:null, scans:[], scan:null, scanBusy:false, photo:null, store:"local", loaded:false};
+  draft:null, logs:{}, logOpen:null, scans:[], scan:null, scanBusy:false, photo:null, store:"local", loaded:false};
 
 /* ---------------- helpers ---------------- */
 const $ = s=>document.querySelector(s);
@@ -396,18 +467,32 @@ function targets(p){
 
 /* ---------------- scoring & plan ---------------- */
 function allowed(r,p,relax){
-  for(const id of p.restrictions){const rs=RESTR.find(x=>x.id===id); if(!rs) continue;
+  for(const id of effRestr(p)){const rs=restrById(id); if(!rs) continue;
     if(rs.ex && [...rs.ex].some(ch=>r.x.includes(ch))) return false;
-    if(rs.req && !relax && !r.tr.includes(rs.req)) return false;}
+    if(rs.noTreat && (r.tr.includes("tr")||r.tr.includes("pr"))) return false;
+    if(relax) continue;
+    if(rs.req && !r.tr.includes(rs.req)) return false;
+    if(rs.maxC && r.c>rs.maxC) return false;
+    if(rs.maxF && r.f>rs.maxF) return false;
+    if(rs.maxNa && r.na>rs.maxNa) return false;}
   if(r.tr.includes("tr") && (p.strict>=2 || p.conditions.includes("liver"))) return false;
   return true;
 }
 function scoreRecipe(r,p,t){
   const w = .6+.2*p.strict; let s=50;
-  const want = new Set(p.conditions.flatMap(id=>CONDITIONS.find(c=>c.id===id)?.want||[]));
+  const conds=p.conditions.map(condById).filter(Boolean);
+  const want = new Set(conds.flatMap(c=>c.want));
   want.forEach(tr=>{ if(r.tr.includes(tr)) s+=9*w; });
-  if(p.conditions.some(id=>CONDITIONS.find(c=>c.id===id)?.sodium)) s -= Math.max(0,r.na-450)/35*w;
-  if(p.conditions.includes("reflux") && /curry|chili|fajita|salsa/i.test(r.n)) s-=14*w;
+  const text=r.n+" "+r.i;
+  for(const c of conds){
+    if(c.avoidX && [...c.avoidX].some(ch=>r.x.includes(ch))) s-=18*w;
+    if(c.avoidRe && c.avoidRe.test(text)) s-=14*w;
+    if(c.fatMax && r.f>c.fatMax) s-=(r.f-c.fatMax)*w;
+  }
+  for(const id of effRestr(p)){const rs=restrById(id); if(!rs) continue;
+    (rs.prefer||[]).forEach(tr=>{ if(r.tr.includes(tr)) s+=6; });
+    if(rs.avoidX && [...rs.avoidX].some(ch=>r.x.includes(ch))) s-=15;}
+  if(conds.some(c=>c.sodium)) s -= Math.max(0,r.na-450)/35*w;
   if(r.tr.includes("pr")) s -= 10*p.strict;
   if(r.tr.includes("tr")) s -= 12;
   if(p.strict>=4) s -= Math.max(0,r.na-600)/40;
@@ -492,7 +577,12 @@ const RESTR_WORDS = {
  shell:/shrimp|crab|lobster|prawn|shellfish/i, vegan:/milk|whey|casein|\begg|honey|gelatin|butter|cheese|anchov/i,
  vegetarian:/gelatin|beef|pork|chicken|anchov|lard/i, pescatarian:/gelatin|beef|pork|chicken|lard/i,
  halal:/pork|lard|gelatin|bacon|ham\b/i, kosher:/pork|lard|bacon|shrimp|crab|lobster/i,
- fodmap:/onion|garlic|inulin|chicory|high fructose|honey|sorbitol|mannitol|xylitol/i
+ fodmap:/onion|garlic|inulin|chicory|high fructose|honey|sorbitol|mannitol|xylitol/i,
+ lactose:/\bmilk\b|whey|lactose|cream\b|milk solids/i, peanut:/peanut/i, sesame:/sesame|tahini/i,
+ redmeat:/beef|lamb|pork|veal|bacon|\bham\b/i, fish:/fish|salmon|tuna|\bcod\b|anchov|sardine|mackerel/i, pork:/pork|lard|bacon|\bham\b|gelatin/i,
+ paleo:/wheat|\boats?\b|rice|corn|soy|bean|lentil|peanut|milk|cheese|sugar|syrup/i,
+ whole30:/wheat|\boats?\b|rice|corn|soy|bean|lentil|peanut|milk|cheese|sugar|syrup|honey|carrageenan|monosodium glutamate|sulfite/i,
+ nosugar:/\bsugar\b|cane sugar|syrup|dextrose|sucrose|fructose|honey|maltose|agave/i
 };
 const SWAPS = {
  cereal:["Plain rolled oats with fruit","Or a cereal with at least 5 g fiber and no more than 6 g sugar per serving."],
@@ -511,9 +601,10 @@ const SWAPS = {
 };
 function scoreProduct(n,p){
   const cond=new Set(p.conditions);
-  const wSug = cond.has("sugar")||cond.has("pcos")||cond.has("liver")?1.5:1;
-  const wNa = cond.has("bp")||cond.has("heart")||cond.has("kidney")?1.5:1;
-  const wSat = cond.has("chol")||cond.has("heart")||cond.has("liver")?1.4:1;
+  const condObjs=p.conditions.map(condById).filter(Boolean);
+  const wSug = cond.has("sugar")||cond.has("pcos")||cond.has("liver")?1.5:Math.max(1,...condObjs.map(c=>c.sugarW||1));
+  const wNa = condObjs.some(c=>c.sodium)?1.5:1;
+  const wSat = cond.has("chol")||cond.has("heart")||cond.has("liver")?1.4:Math.max(1,...condObjs.map(c=>c.satW||1));
   const v=k=>Math.max(0,+n[k]||0);
   const parts=[
     {k:"Calories",val:v("kcal"),u:"kcal",pts:Math.min(10,v("kcal")/80),neg:true},
@@ -532,7 +623,9 @@ function scoreProduct(n,p){
   score -= addPen; if(n.ultra) score-=8;
   score = Math.round(clamp(score,0,100));
   const conflicts=[];
-  p.restrictions.forEach(id=>{ const re=RESTR_WORDS[id]; const m=txt.match(re); if(m) conflicts.push(`${RESTR.find(r=>r.id===id).n}: ingredients mention “${m[0]}”.`); });
+  effRestr(p).forEach(id=>{ const re=RESTR_WORDS[id]; const m=re&&txt.match(re); if(m) conflicts.push(`${restrById(id).n}: ingredients mention “${m[0]}”.`); });
+  if(effRestr(p).includes("lowsodium") && v("sodium")>400) conflicts.push("Low sodium: over 400 mg sodium per 100 g.");
+  if(effRestr(p).includes("lowfat") && v("satFat")>5) conflicts.push("Low fat: over 5 g saturated fat per 100 g.");
   if(p.restrictions.includes("keto") && v("sugar")+0>8) conflicts.push("Keto: over 8 g sugar per 100 g.");
   const level=(x,lo,hi)=>x<=lo?"low":x>=hi?"high":"moderate";
   const facts=[
@@ -551,6 +644,7 @@ const passMark = p=>[0,35,45,55,65,75][p.strict];
 /* ---------------- storage (this device only) ---------------- */
 function initStore(){
   const v=ls.get("state"); if(v) applySaved(v);
+  S.logs=loadLogs();
   const sc=ls.get("scans"); if(Array.isArray(sc)) S.scans=sc.filter(s=>s&&s.input&&s.n);
   S.loaded=true; render();
 }
@@ -576,10 +670,12 @@ function exampleBanner(){
 }
 function viewPlan(){
   const p=S.profile,{plan,t,warnings}=buildPlan(); const u=p.units;
-  const day=plan[S.day]; const dayK=day.reduce((a,x)=>a+(x.r?x.r.k*x.mult:0),0);
-  const dayP=day.reduce((a,x)=>a+(x.r?x.r.p*x.mult:0),0), dayNa=day.reduce((a,x)=>a+(x.r?x.r.na*x.mult:0),0);
+  const day=plan[S.day];
+  const eaten=(di,x,k)=>{const lg=S.logs[logKey(di,x.meal.k)]; if(lg) return lg[k]||0; return x.r?x.r[k]*x.mult:0;};
+  const dayK=day.reduce((a,x)=>a+eaten(S.day,x,"k"),0), dayP=day.reduce((a,x)=>a+eaten(S.day,x,"p"),0), dayNa=day.reduce((a,x)=>a+eaten(S.day,x,"na"),0);
+  const nLogged=day.filter(x=>S.logs[logKey(S.day,x.meal.k)]).length;
   const condNames=p.conditions.map(id=>CONDITIONS.find(c=>c.id===id)?.n).filter(Boolean);
-  const restrNames=p.restrictions.map(id=>RESTR.find(r=>r.id===id)?.n).filter(Boolean);
+  const restrNames=effRestr(p).map(id=>restrById(id)?.n).filter(Boolean);
   const goal=GOALS.find(g=>g.id===p.goal);
   let journey;
   if(p.goalKg && t.weeks){
@@ -601,28 +697,32 @@ function viewPlan(){
       <div class="focus">${condNames.map(n=>`<span class="pill acc">${esc(n)}</span>`).join("")}${restrNames.map(n=>`<span class="pill">${esc(n)}</span>`).join("")}<span class="pill">${STRICT[p.strict]}</span></div>
     </div>
   </div>
-  ${warnings.length?`<p class="warn">Few recipes match every restriction you picked, so some ${warnings.join(", ").toLowerCase()} picks bend the Low-FODMAP or keto rule. Swap them or loosen a restriction.</p>`:""}
-  <div class="days" role="tablist">${DAYS.map((d,i)=>{const k=Math.round(plan[i].reduce((a,x)=>a+(x.r?x.r.k*x.mult:0),0));return `<button class="day" role="tab" data-act="day" data-i="${i}" aria-selected="${i===S.day}"><b>${d}</b><span class="num">${k.toLocaleString()}</span></button>`}).join("")}</div>
+  ${warnings.length?`<p class="warn">Few recipes match every restriction you picked, so some ${warnings.join(", ").toLowerCase()} picks bend a Low-FODMAP, keto, high-protein or nutrient-limit rule. Swap them or loosen a restriction.</p>`:""}
+  <div class="days" role="tablist">${DAYS.map((d,i)=>{const k=Math.round(plan[i].reduce((a,x)=>a+eaten(i,x,"k"),0));return `<button class="day" role="tab" data-act="day" data-i="${i}" aria-selected="${i===S.day}"><b>${d}</b><span class="num">${k.toLocaleString()}</span></button>`}).join("")}</div>
   <div class="dayhead"><h2>${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][S.day]}</h2>
-    <p class="muted small"><span class="num">${Math.round(dayK).toLocaleString()}</span> kcal · <span class="num">${Math.round(dayP)}</span> g protein · <span class="num">${Math.round(dayNa).toLocaleString()}</span> mg sodium</p></div>
-  <div class="meals">${day.map(mealCard).join("")}</div>
+    <p class="muted small"><span class="num">${Math.round(dayK).toLocaleString()}</span> kcal · <span class="num">${Math.round(dayP)}</span> g protein · <span class="num">${Math.round(dayNa).toLocaleString()}</span> mg sodium${nLogged?` · includes ${nLogged} logged meal${nLogged>1?"s":""}`:""}</p></div>
+  <div class="meals">${day.map(x=>mealCard(x,t)).join("")}</div>
   <div class="cols">
     <div class="panel"><h3>Why these meals</h3><ul class="notes">${planNotes(p,t).map(x=>`<li><span>${x}</span></li>`).join("")}</ul>
       <div><button class="btn" data-act="reshuffle">Shuffle the whole week</button></div></div>
     <div class="panel grocery"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3>Grocery list for the week</h3><button class="btn ghost" data-act="copylist">Copy list</button></div>${groceryHTML(plan)}</div>
   </div></section>`;
 }
-function mealCard(x){
-  const r=x.r; if(!r) return `<article class="meal"><span class="eyebrow">${x.meal.n}</span><p>No recipe fits these settings. Loosen a restriction in your profile.</p></article>`;
-  const p=S.profile; const want=new Set(p.conditions.flatMap(id=>CONDITIONS.find(c=>c.id===id)?.want||[]));
+function mealCard(x,t){
+  const r=x.r; const key=logKey(S.day,x.meal.k); const log=S.logs[key]; const editing=S.logOpen===x.meal.k;
+  const top=`<div class="mtop"><span class="eyebrow">${x.meal.n} · ${dateOf(S.day).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>${r&&x.mult!==1&&!log?`<span class="pill">${x.mult}× portion</span>`:""}${log&&!editing?`<span class="pill">Logged</span>`:""}</div>`;
+  if(!r&&!log&&!editing) return `<article class="meal">${top}<p>No recipe fits these settings. Loosen a restriction in your profile.</p><div class="acts"><button class="btn" data-act="logopen" data-k="${x.meal.k}">Log what I ate</button></div></article>`;
+  if(editing) return `<article class="meal">${top}${r?`<p class="small muted">Planned: <b>${esc(r.n)}</b> · ${Math.round(r.k*x.mult)} kcal</p>`:""}${logFormHTML(x,log)}</article>`;
+  if(log) return `<article class="meal">${top}${r?`<p class="small muted">Planned: <b>${esc(r.n)}</b></p>`:""}${compareHTML(x,log,t)}</article>`;
+  const p=S.profile; const want=new Set(p.conditions.flatMap(id=>condById(id)?.want||[]));
   const tags=r.tr.filter(t=>TRAIT_LABEL[t]).sort((a,b)=>want.has(b)-want.has(a)).slice(0,4);
   const m=x.mult;
-  return `<article class="meal"><div class="mtop"><span class="eyebrow">${x.meal.n}</span>${m!==1?`<span class="pill">${m}× portion</span>`:""}</div>
+  return `<article class="meal">${top}
    <h3>${esc(r.n)}</h3>
    <div class="stats"><span><b>${Math.round(r.k*m)}</b> kcal</span><span><b>${Math.round(r.p*m)}g</b> protein</span><span><b>${Math.round(r.c*m)}g</b> carbs</span><span><b>${Math.round(r.f*m)}g</b> fat</span></div>
    <div class="tags">${tags.map(t=>`<span class="pill ${want.has(t)?"acc":""}">${TRAIT_LABEL[t]}</span>`).join("")}</div>
    <details><summary>Ingredients & how to make it</summary><ul>${r.i.split("|").map(s=>`<li>${esc(s.slice(2))}</li>`).join("")}</ul><p class="small">${esc(r.h)}</p><p class="small muted">Fiber ${Math.round(r.fi*m)} g · Sodium ${Math.round(r.na*m)} mg (approx.)</p></details>
-   <div class="acts"><button class="btn" data-act="swap" data-key="${x.key}">Swap meal</button></div></article>`;
+   <div class="acts"><button class="btn" data-act="swap" data-key="${x.key}">Swap meal</button><button class="btn" data-act="logopen" data-k="${x.meal.k}">I ate something else</button></div></article>`;
 }
 function planNotes(p,t){
   const out=[];
@@ -630,7 +730,7 @@ function planNotes(p,t){
   if(p.goal==="lose") out.push(`<b>Weight loss.</b> A ${Math.round((t.tdee-t.kcal)/10)*10} kcal daily deficit, with protein-forward meals to protect muscle and keep you full.`);
   if(p.goal==="gain") out.push(`<b>Muscle gain.</b> A small surplus and ${t.protein} g protein a day; pair with strength training.`);
   if(p.goal==="energy") out.push(`<b>Energy.</b> Low-glycemic carbs at every meal and no long gaps between eating.`);
-  if(p.restrictions.length) out.push(`<b>Restrictions.</b> Every meal respects ${p.restrictions.map(id=>RESTR.find(r=>r.id===id)?.n).join(", ")}. Always check labels for allergens.`);
+  if(effRestr(p).length) out.push(`<b>Restrictions.</b> Every meal respects ${effRestr(p).map(id=>restrById(id)?.n).join(", ")}. Always check labels for allergens.`);
   out.push(`<b>${STRICT[p.strict]}.</b> ${STRICT_D[p.strict]}`);
   return out;
 }
@@ -638,6 +738,111 @@ function groceryHTML(plan){
   const items={}; plan.flat().forEach(x=>{ if(!x.r) return; x.r.i.split("|").forEach(s=>{const a=s[0],n=s.slice(2); items[a]=items[a]||{}; items[a][n]=(items[a][n]||0)+1;}); });
   const checked=ls.get("checked")||{};
   return Object.keys(AISLES).filter(a=>items[a]).map(a=>`<div><h4>${AISLES[a]}</h4>${Object.entries(items[a]).sort().map(([n,c])=>{const id="g-"+a+"-"+n.replace(/\W+/g,"");return `<label class="${checked[n]?"done":""}" for="${id}"><input type="checkbox" id="${id}" data-act="check" data-n="${esc(n)}" ${checked[n]?"checked":""}><span>${esc(n)}</span><span class="cnt">${c>1?c+" meals":""}</span></label>`}).join("")}</div>`).join("");
+}
+
+/* ---- "I ate something else": custom meal logging and rating ---- */
+// Typical restaurant/takeout estimates so people don't need to know macros. Users can edit every number.
+const MEAL_PRESETS=[
+ {n:"Burger & fries",k:980,p:42,c:82,f:52,fi:5,na:1600,sug:10,fl:["fried","proc"]},
+ {n:"Pizza (2 slices)",k:570,p:24,c:64,f:24,fi:4,na:1300,sug:6,fl:["proc"]},
+ {n:"Burrito",k:1000,p:45,c:110,f:38,fi:14,na:2000,sug:6,fl:["veg"]},
+ {n:"Fried chicken meal",k:900,p:45,c:60,f:50,fi:3,na:2000,sug:4,fl:["fried","proc"]},
+ {n:"Sub sandwich",k:600,p:30,c:60,f:22,fi:5,na:1500,sug:8,fl:["veg"]},
+ {n:"Chicken salad",k:450,p:35,c:15,f:28,fi:5,na:700,sug:6,fl:["veg"]},
+ {n:"Sushi (2 rolls)",k:500,p:20,c:90,f:6,fi:3,na:1200,sug:12,fl:[]},
+ {n:"Pasta with red sauce",k:650,p:20,c:100,f:15,fi:8,na:900,sug:12,fl:["veg"]},
+ {n:"Ramen",k:600,p:20,c:80,f:20,fi:3,na:2500,sug:4,fl:["proc"]},
+ {n:"Coffee drink & pastry",k:650,p:10,c:85,f:28,fi:2,na:450,sug:50,fl:["sweet","proc"]},
+ {n:"Smoothie bowl",k:450,p:10,c:80,f:10,fi:9,na:100,sug:45,fl:["sweet"]},
+ {n:"Home-cooked meat & veg",k:550,p:40,c:35,f:22,fi:6,na:600,sug:6,fl:["veg","home"]},
+ {n:"Skipped this meal",k:0,p:0,c:0,f:0,fi:0,na:0,sug:0,fl:["skip"]}
+];
+const FLAGS=[["veg","Had vegetables or fruit"],["grain","Whole grains"],["home","Home-cooked"],["fried","Fried"],["proc","Fast food / processed"],["sweet","Dessert or sugary drink"],["skip","Skipped the meal"]];
+
+function weekMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d}
+function dateOf(dayIdx){const d=weekMonday();d.setDate(d.getDate()+dayIdx);return d}
+const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const logKey=(dayIdx,m)=>isoDate(dateOf(dayIdx))+"|"+m;
+function loadLogs(){const v=ls.get("logs")||{};const cutoff=isoDate(new Date(Date.now()-60*864e5));for(const k of Object.keys(v)) if(k.split("|")[0]<cutoff) delete v[k];return v}
+function saveLogs(){ls.set("logs",S.logs)}
+
+/** Score one meal 0–100 for this profile and this meal slot. Works for planned recipes and logged meals alike. */
+function mealScore(m,share,p,t){
+  const reasons=[]; const target=t.kcal*share, pTarget=t.protein*share, naLimit=t.sodium*share;
+  const conds=p.conditions.map(condById).filter(Boolean);
+  if(m.flags.includes("skip")){ return {score:30,reasons:[{d:-1,txt:"Skipped meals often lead to overeating later and leave protein and fiber short for the day."}]}; }
+  let s=72;
+  const dev=(m.k-target)/target;
+  if(Math.abs(dev)>.15){const pen=Math.min(25,(Math.abs(dev)-.15)*45); s-=pen;
+    reasons.push({d:-pen,txt:dev>0?`${Math.round(m.k-target)} kcal over this meal's ${Math.round(target)} kcal target.`:`${Math.round(target-m.k)} kcal under this meal's target; you may get hungry sooner.`});}
+  const pr=pTarget?m.p/pTarget:1;
+  if(pr<.6){const pen=(.6-pr)*30; s-=pen; reasons.push({d:-pen,txt:`Low protein (${Math.round(m.p)} g of about ${Math.round(pTarget)} g).`});}
+  else if(pr>=.9){s+=5; reasons.push({d:5,txt:`Good protein (${Math.round(m.p)} g).`});}
+  if(m.fi>=6){s+=8;reasons.push({d:8,txt:`High fiber (${Math.round(m.fi)} g).`})} else if(m.fi>=3) s+=3; else {s-=5;reasons.push({d:-5,txt:"Little fiber."})}
+  const naW=conds.some(c=>c.sodium)?1.6:1;
+  if(m.na>naLimit){const pen=Math.min(22,(m.na-naLimit)/naLimit*18*naW); s-=pen; reasons.push({d:-pen,txt:`${Math.round(m.na).toLocaleString()} mg sodium, over this meal's ${Math.round(naLimit)} mg share${naW>1?", which matters for your blood pressure, heart or kidney focus":""}.`});}
+  if(m.k>0 && m.f*9>m.k*.42){s-=7;reasons.push({d:-7,txt:"High in fat for its calories."})}
+  const sugW=Math.max(1,...conds.map(c=>c.sugarW||(["sugar","pcos","liver"].includes(c.id)?1.6:1)));
+  if(m.sug!=null && m.sug>15){const pen=Math.min(20,(m.sug-15)*.7*sugW); s-=pen; reasons.push({d:-pen,txt:`${Math.round(m.sug)} g sugar${sugW>1?", hard on your blood-sugar goals":""}.`});}
+  const cap=Math.min(1,...conds.map(c=>c.carbCap||1));
+  if(m.k>0 && cap<1 && m.c*4>m.k*cap+40){s-=8;reasons.push({d:-8,txt:"Carb-heavy for your blood-sugar focus."})}
+  if(effRestr(p).includes("keto") && m.c>20){s-=15;reasons.push({d:-15,txt:`${Math.round(m.c)} g carbs breaks keto.`})}
+  const F=m.flags;
+  if(F.includes("veg")){s+=6;reasons.push({d:6,txt:"Included vegetables or fruit."})}
+  if(F.includes("grain")) s+=4;
+  if(F.includes("home")) s+=3;
+  if(F.includes("fried")){const pen=conds.some(c=>["chol","heart","gallbl","reflux","liver"].includes(c.id))?14:9; s-=pen; reasons.push({d:-pen,txt:"Fried food."})}
+  if(F.includes("proc")){const pen=6+2*p.strict; s-=pen; reasons.push({d:-pen,txt:"Fast food or highly processed."})}
+  if(F.includes("sweet")){s-=8;reasons.push({d:-8,txt:"Dessert or sugary drink."})}
+  for(const id of effRestr(p)){const re=RESTR_WORDS[id]; const hit=re&&m.n&&m.n.match(re); if(hit){s-=20;reasons.push({d:-20,txt:`May not fit ${restrById(id).n} (“${hit[0]}”).`})}}
+  return {score:Math.round(clamp(s,5,100)),reasons};
+}
+function recipeAsMeal(r,mult){
+  return {n:r.n,k:r.k*mult,p:r.p*mult,c:r.c*mult,f:r.f*mult,fi:r.fi*mult,na:r.na*mult,sug:null,
+    flags:[...(r.i.includes("p:")?["veg"]:[]),...(r.x.includes("R")&&r.tr.includes("fi")?["grain"]:[]),"home",...(r.tr.includes("pr")?["proc"]:[]),...(r.tr.includes("tr")?["sweet"]:[])]};
+}
+function compareHTML(x,log,t){
+  const p=S.profile, share=x.meal.share;
+  const planned=x.r?mealScore(recipeAsMeal(x.r,x.mult),share,p,t):null;
+  const ate=mealScore(log,share,p,t);
+  const diff=planned?ate.score-planned.score:0;
+  const verdict=!planned?["","Logged"]:diff>=5?["b-exc","Better than planned"]:diff>-8?["b-good","About as good as planned"]:diff>-30?["b-poor","Not as good as planned"]:["b-bad","Much worse than planned"];
+  const dial=(sc,lbl)=>{const [c]=band(sc);return `<div class="mini"><div class="dial sm ${c}" style="--v:${sc}"><div><b>${sc}</b></div></div><span class="small">${lbl}</span></div>`};
+  const rs=ate.reasons.slice().sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,4);
+  const row=(l,a,b,u)=>`<tr><th scope="row">${l}</th><td class="num">${Math.round(b).toLocaleString()}${u}</td><td class="num">${Math.round(a).toLocaleString()}${u}</td></tr>`;
+  const pm=x.r?recipeAsMeal(x.r,x.mult):null;
+  return `<div class="logged">
+    <div class="loghead"><span class="eyebrow">You ate instead</span><span class="band ${verdict[0]}">${verdict[1]}</span></div>
+    <h3>${esc(log.n||"Custom meal")}</h3>
+    <div class="vs">${planned?dial(planned.score,"Planned"):""}${planned?`<span class="muted small">vs</span>`:""}${dial(ate.score,"What you ate")}</div>
+    ${pm?`<div class="tablewrap"><table class="cmp"><thead><tr><th></th><th scope="col">Ate</th><th scope="col">Planned</th></tr></thead><tbody>
+      ${row("Calories",pm.k,log.k," kcal")}${row("Protein",pm.p,log.p," g")}${row("Carbs",pm.c,log.c," g")}${row("Fat",pm.f,log.f," g")}${row("Fiber",pm.fi,log.fi," g")}${row("Sodium",pm.na,log.na," mg")}
+    </tbody></table></div>`:""}
+    <ul class="why">${rs.map(r=>`<li class="${r.d>0?"up":"down"}">${esc(r.txt)}</li>`).join("")}</ul>
+    ${diff<-4&&x.r?`<p class="small muted">Next time, ${esc(x.r.n.toLowerCase())} would keep you closer to your plan. No stress; one meal doesn't undo a week.</p>`:""}
+    <div class="acts"><button class="btn" data-act="logopen" data-k="${x.meal.k}">Edit</button><button class="btn ghost" data-act="logdel" data-k="${x.meal.k}">Back to planned meal</button></div>
+  </div>`;
+}
+function logFormHTML(x,log){
+  const v=(k,d="")=>log&&log[k]!=null?log[k]:d;
+  const f=log?.flags||[];
+  return `<form class="logform" id="logform" data-k="${x.meal.k}" novalidate>
+    <span class="eyebrow">What did you eat instead?</span>
+    <div class="presets">${MEAL_PRESETS.map((m,i)=>`<button type="button" class="chip" data-act="preset" data-i="${i}">${esc(m.n)}</button>`).join("")}</div>
+    <p class="small muted">Tap a preset for typical numbers, then adjust. Check a nutrition label or menu if you can.</p>
+    <div class="field"><label for="lg-n">Meal</label><input type="text" id="lg-n" value="${esc(v("n"))}" placeholder="e.g. Chicken burrito bowl" required></div>
+    <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(96px,1fr))">
+      ${[["k","Calories"],["p","Protein (g)"],["c","Carbs (g)"],["f","Fat (g)"],["fi","Fiber (g)"],["na","Sodium (mg)"],["sug","Sugar (g)"]].map(([k,l])=>`<div class="field"><label for="lg-${k}">${l}</label><input type="number" id="lg-${k}" min="0" step="1" inputmode="numeric" value="${v(k)===""?"":Math.round(v(k))}"></div>`).join("")}
+    </div>
+    <div class="chips">${FLAGS.map(([k,l])=>`<label class="chip check"><input type="checkbox" id="lg-fl-${k}" ${f.includes(k)?"checked":""}> ${l}</label>`).join("")}</div>
+    <div class="acts"><button class="btn primary" type="submit">Save and compare</button><button class="btn ghost" type="button" data-act="logcancel">Cancel</button></div>
+  </form>`;
+}
+function readLogForm(){
+  const g=id=>document.getElementById(id); const n=id=>{const v=g(id)?.value;return v===""||v==null?null:Math.max(0,+v)};
+  const flags=FLAGS.map(([k])=>k).filter(k=>g("lg-fl-"+k)?.checked);
+  const m={n:(g("lg-n")?.value||"").trim(),k:n("lg-k"),p:n("lg-p"),c:n("lg-c"),f:n("lg-f"),fi:n("lg-fi"),na:n("lg-na"),sug:n("lg-sug"),flags,at:Date.now()};
+  return m;
 }
 
 /* ---- profile ---- */
@@ -672,11 +877,11 @@ function viewProfile(){
   </fieldset>
 
   <fieldset><legend>Health focus</legend><p class="small muted">Pick anything you want your diet to help with. Meals that support these rank first.</p>
-    <div class="chips">${CONDITIONS.map(c=>`<button type="button" class="chip" data-act="cond" data-id="${c.id}" aria-pressed="${d.conditions.includes(c.id)}">${esc(c.n)}</button>`).join("")}</div>
+    ${COND_GROUPS.map((g,gi)=>`<div class="chipgroup"><span class="eyebrow">${g}</span><div class="chips">${CONDITIONS.filter(c=>c.g===gi).map(c=>`<button type="button" class="chip" data-act="cond" data-id="${c.id}" aria-pressed="${d.conditions.includes(c.id)}">${esc(c.n)}</button>`).join("")}</div></div>`).join("")}
   </fieldset>
 
   <fieldset><legend>Dietary restrictions</legend><p class="small muted">Meals that break these are never suggested, and scanned products are flagged.</p>
-    <div class="chips">${RESTR.map(c=>`<button type="button" class="chip" data-act="restr" data-id="${c.id}" aria-pressed="${d.restrictions.includes(c.id)}">${esc(c.n)}</button>`).join("")}</div>
+    ${RESTR_GROUPS.map((g,gi)=>`<div class="chipgroup"><span class="eyebrow">${g}</span><div class="chips">${RESTR.filter(c=>c.g===gi).map(c=>{const forced=!d.restrictions.includes(c.id)&&effRestr(d).includes(c.id);return `<button type="button" class="chip" data-act="restr" data-id="${c.id}" aria-pressed="${d.restrictions.includes(c.id)||forced}" ${forced?'disabled title="Required by a health condition you picked"':""}>${esc(c.n)}${forced?" (required)":""}</button>`}).join("")}</div></div>`).join("")}
   </fieldset>
 
   <fieldset><legend>How healthy do you want to eat?</legend>
@@ -932,6 +1137,12 @@ document.addEventListener("click",e=>{
     if(id==="vegan"&&i<0){S.draft.restrictions=S.draft.restrictions.filter(x=>!["vegetarian","pescatarian"].includes(x))}
     if((id==="vegetarian"||id==="pescatarian")&&i<0){S.draft.restrictions=S.draft.restrictions.filter(x=>x==="vegetarian"||x==="pescatarian"?x===id:x!=="vegan")}
     render()}
+  if(a==="logopen"){S.logOpen=b.dataset.k;render();document.getElementById("lg-n")?.focus()}
+  if(a==="logcancel"){S.logOpen=null;render()}
+  if(a==="logdel"){delete S.logs[logKey(S.day,b.dataset.k)];saveLogs();render();toast("Back to the planned meal")}
+  if(a==="preset"){const m=MEAL_PRESETS[+b.dataset.i];const set=(id,v)=>{const el=document.getElementById(id);if(el) el.value=v};
+    set("lg-n",m.fl.includes("skip")?"Skipped":m.n);["k","p","c","f","fi","na","sug"].forEach(k=>set("lg-"+k,m[k]));
+    FLAGS.forEach(([k])=>{const el=document.getElementById("lg-fl-"+k);if(el) el.checked=m.fl.includes(k)})}
   if(a==="camera"){openCamera()}
   if(a==="closecam"){closeCamera()}
   if(a==="hist"){showProduct(S.scans[+b.dataset.i])}
@@ -950,6 +1161,11 @@ document.addEventListener("submit",e=>{
     if(!d.weightKg||!d.heightCm||!d.age){toast("Add your weight, height and age first");return}
     S.profile=JSON.parse(JSON.stringify(d));S.isExample=false;S.overrides={};S.seed=Math.floor(Math.random()*1e9);S.draft=null;persistPlan();S.tab="plan";render();window.scrollTo({top:0});toast("Profile saved. Your plan is ready.")}
   if(e.target.id==="codeform"){lookupBarcode($("#code").value)}
+  if(e.target.id==="logform"){const m=readLogForm(); const skip=m.flags.includes("skip");
+    if(!m.n&&!skip){toast("Name what you ate");return}
+    if(m.k==null&&!skip){toast("Add the calories (a preset can fill an estimate)");return}
+    ["k","p","c","f","fi","na"].forEach(k=>{if(m[k]==null) m[k]=0}); if(skip&&!m.n) m.n="Skipped";
+    const k=e.target.dataset.k; S.logs[logKey(S.day,k)]=m; S.logOpen=null; saveLogs(); render(); toast("Logged. Here's how it compares.")}
   if(e.target.id==="manual"){const input=readManual(); if(["kcal","sugar","satFat","sodium","fiber","protein"].every(k=>input[k]==="")){toast("Enter at least one number from the label");return}
     S.manualName=""; showProduct({input,n:per100(input),off:null,at:Date.now()})}
 });

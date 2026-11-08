@@ -2,8 +2,9 @@
 
 A meal-planning web app that people open from a link and add to their phone's home screen. Nothing to install from an app store.
 
-- **Profile:** goal, current and goal weight, pace, health conditions, dietary restrictions, and how strictly you want to eat.
+- **Profile:** goal, current and goal weight, pace, 25 health focus options in four groups, 26 dietary restrictions in four groups, and how strictly you want to eat. Some conditions turn on the restrictions they need (celiac disease adds gluten-free).
 - **Meal plan:** a weekly plan built for that profile, with calorie and macro targets, a goal date, meal swaps and a grocery list.
+- **"I ate something else":** log what you actually ate (presets for common takeout meals, or your own numbers). The app rates it against the planned meal for your profile, explains why, and counts it in the day's totals.
 - **Scanner:** the phone camera reads grocery barcodes. Products are looked up in [Open Food Facts](https://world.openfoodfacts.org), scored for your profile, and paired with healthier products from the same shelf.
 
 Everything is saved on the user's own device; there are no accounts and no server.
