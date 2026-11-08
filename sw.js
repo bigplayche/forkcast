@@ -1,5 +1,5 @@
 // Forkcast service worker: keeps the app working offline. Product lookups always go to the network.
-const CACHE = 'forkcast-v2';
+const CACHE = 'forkcast-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'vendor/zxing.min.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 

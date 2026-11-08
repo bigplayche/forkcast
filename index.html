@@ -133,6 +133,15 @@ section.view{display:flex;flex-direction:column;gap:22px}
 .grocery label{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
 .grocery label.done span{text-decoration:line-through;color:var(--muted)}
 .grocery .cnt{margin-left:auto;font-size:.75rem;color:var(--muted)}
+.recipe{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.recipe h4{margin:4px 0 0;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper .btn{padding:4px 12px;font-size:1rem}
+.ing{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.ing b{font-weight:600}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.steps li::marker{font-weight:700;color:var(--accent)}
 .logged{display:flex;flex-direction:column;gap:10px}
 .loghead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .vs{display:flex;align-items:center;gap:14px}
@@ -283,6 +292,157 @@ const RECIPE_EXTRA={
  d1:{x:"R"},d2:{x:"B"},d4:{x:"BR"},d5:{x:"R"},d6:{x:"B"},d7:{x:"R",t:"ca"},d9:{x:"BR"},d10:{x:"R"},d11:{x:"RU"},d14:{x:"R"},d15:{x:"BZ"},d16:{t:"ca"},
  s2:{x:"BZ"},s5:{x:"L",t:"ca"},s6:{x:"B",t:"ca"},s7:{x:"B"},s8:{t:"ca"},s9:{x:"U"},s10:{x:"U"},s11:{x:"AB",drop:"N"},s12:{x:"R"}
 };
+// Full recipes, one serving each. Ingredient = [quantity, unit, name, metric grams/ml or null]. Quantity null = "to taste".
+// t = [prep minutes, cook minutes]. Amounts scale with the portion size and the "cooking for" count.
+const FULL={
+ b1:{t:[5,0],g:[[0.5,"cup","rolled oats (certified gluten-free if needed)",45],[1,"tbsp","chia seeds",12],[0.75,"cup","unsweetened oat milk",180],[0.5,"cup","blueberries, fresh or frozen",75],[0.25,"tsp","cinnamon"],[null,"","pinch of salt"]],
+  s:["Add the oats, chia seeds, cinnamon and salt to a jar or bowl.","Pour in the oat milk and stir well so the chia doesn't clump. Wait 2 minutes and stir again.","Top with the blueberries, cover and refrigerate overnight (at least 4 hours).","Stir before eating. Add a splash more milk if it's too thick. Keeps 3 days in the fridge."]},
+ b2:{t:[5,6],g:[[2,"","large eggs"],[1,"cup","baby spinach",30],[2,"tbsp","crumbled feta",20],[1,"slice","rye bread",40],[1,"tsp","olive oil",5],[null,"","black pepper"]],
+  s:["Toast the rye bread.","Heat the olive oil in a nonstick pan over medium heat. Add the spinach and stir until just wilted, about 1 minute.","Beat the eggs with pepper, pour into the pan and stir gently with a spatula until softly set, 2–3 minutes.","Take off the heat, fold in the feta and spoon onto the toast."]},
+ b3:{t:[5,0],g:[[0.75,"cup","plain Greek yogurt (2%)",170],[0.5,"cup","raspberries, fresh or thawed",60],[2,"tbsp","chopped walnuts",15],[1,"tbsp","ground flaxseed",7],[0.25,"tsp","vanilla extract (optional)"]],
+  s:["Stir the vanilla into the yogurt if using.","Spoon half the yogurt into a glass, add half the raspberries, then repeat the layers.","Sprinkle the walnuts and flaxseed on top. Eat right away so the nuts stay crunchy."]},
+ b4:{t:[5,10],g:[[5,"oz","firm tofu, drained",140],[0.5,"","bell pepper, diced"],[0.33,"cup","black beans, rinsed (low sodium)",60],[0.25,"tsp","ground turmeric"],[0.25,"tsp","ground cumin"],[1,"tsp","olive oil",5],[0.5,"","lime"],[null,"","salt and pepper"]],
+  s:["Pat the tofu dry with a towel, then crumble it with your fingers into bite-size pieces.","Heat the oil in a pan over medium-high heat. Cook the pepper for 3 minutes until softened.","Add the tofu, turmeric, cumin, salt and pepper. Cook 5 minutes, stirring, until the tofu is golden in spots.","Stir in the beans to warm through, about 1 minute. Squeeze the lime over and serve."]},
+ b5:{t:[5,3],g:[[1,"slice","sourdough bread",50],[0.5,"","ripe avocado"],[2,"oz","smoked salmon",55],[0.25,"","lemon"],[null,"","black pepper, chili flakes (optional)"]],
+  s:["Toast the sourdough.","Mash the avocado with a squeeze of lemon and a pinch of pepper.","Spread on the toast, lay the salmon on top and finish with more lemon and chili flakes if you like."]},
+ b6:{t:[5,8],g:[[2,"","large eggs"],[0.5,"","small zucchini, thinly sliced",80],[1,"tbsp","chopped chives"],[1,"tbsp","grated parmesan",6],[1,"tsp","olive oil",5],[null,"","salt and pepper"]],
+  s:["Heat the oil in a small nonstick pan over medium heat. Cook the zucchini with a pinch of salt for 3–4 minutes until tender, then spread it out evenly.","Beat the eggs with the chives and pepper and pour over the zucchini.","Cook without stirring for 2–3 minutes, lifting the edges so raw egg runs underneath.","Sprinkle with parmesan, fold in half and slide onto a plate."]},
+ b7:{t:[5,10],g:[[1,"","ripe banana"],[0.33,"cup","rolled oats",30],[1,"","large egg"],[0.25,"tsp","baking powder"],[0.25,"tsp","cinnamon"],[1,"tbsp","almond butter",16],[0.5,"tsp","butter or oil for the pan"]],
+  s:["Blend the banana, oats, egg, baking powder and cinnamon until smooth. Let it rest 5 minutes to thicken.","Heat a lightly greased nonstick pan over medium-low heat.","Pour in 3–4 small pancakes. Cook 2 minutes until bubbles form, flip and cook 1–2 minutes more.","Serve warm, drizzled with the almond butter."]},
+ b8:{t:[2,15],g:[[0.33,"cup","dry quinoa, rinsed",55],[0.75,"cup","unsweetened soy milk",180],[0.25,"cup","water",60],[0.5,"tsp","cinnamon"],[0.5,"","pear, diced"],[1,"tsp","maple syrup (optional)",5]],
+  s:["Bring the quinoa, soy milk, water and cinnamon to a simmer in a small pot.","Cover and cook on low for 12–15 minutes, stirring once or twice, until the quinoa is tender and creamy.","Spoon into a bowl and top with the pear and a drizzle of maple syrup if you like."]},
+ b9:{t:[5,0],g:[[0.75,"cup","low-fat cottage cheese",170],[1,"","kiwi, peeled and sliced"],[1,"tbsp","pumpkin seeds",9],[null,"","cinnamon (optional)"]],
+  s:["Spoon the cottage cheese into a bowl.","Top with the kiwi and pumpkin seeds, and a pinch of cinnamon if you like."]},
+ b10:{t:[5,0],g:[[1,"","frozen banana"],[1,"tbsp","natural peanut butter",16],[1,"cup","milk or kefir",240],[2,"tbsp","rolled oats",12],[3,"","ice cubes"]],
+  s:["Add everything to a blender.","Blend until smooth, about 45 seconds. Add a splash more milk if it's too thick."]},
+ b11:{t:[0,0],g:[[1,"","bakery blueberry muffin"],[1,"","12 oz latte"]],
+  s:["A café breakfast for days off-plan. Pick the smaller muffin size if there's a choice, and have it with a protein-rich lunch."]},
+ b12:{t:[5,0],g:[[0.75,"cup","unsweetened coconut yogurt",170],[0.5,"cup","strawberries, sliced",75],[1,"tbsp","chia seeds",12],[1,"tbsp","pumpkin seeds",9]],
+  s:["Spoon the yogurt into a bowl.","Top with the strawberries, chia and pumpkin seeds."]},
+ b13:{t:[5,0],g:[[3,"tbsp","chia seeds",36],[0.75,"cup","light canned coconut milk",180],[0.5,"tsp","vanilla extract"],[0.33,"cup","raspberries",40]],
+  s:["Whisk the chia, coconut milk and vanilla in a jar.","Wait 5 minutes, whisk again to break up clumps, then cover and chill for at least 4 hours or overnight.","Top with raspberries before eating. Keeps 3 days."]},
+ b14:{t:[10,15],g:[[1,"","small sweet potato, in ½-inch cubes",150],[3,"oz","ground turkey (93% lean)",85],[1,"cup","baby spinach",30],[2,"tsp","olive oil",10],[0.5,"tsp","dried thyme"],[null,"","salt and pepper"]],
+  s:["Heat the oil in a pan over medium heat. Add the sweet potato with a pinch of salt, cover and cook 8 minutes, stirring now and then.","Uncover, push the potato aside, add the turkey and thyme and break it up as it browns, about 5 minutes.","Stir everything together and cook until the potato is crisp at the edges.","Add the spinach and stir until wilted. Season with pepper."]},
+ b15:{t:[10,20],g:[[3,"","large eggs"],[0.25,"","bell pepper, finely diced"],[0.25,"","small zucchini, finely diced"],[1,"tbsp","chopped chives"],[null,"","salt and pepper"],[null,"","oil spray"]],
+  s:["Heat the oven to 350°F (175°C) and grease 3 cups of a muffin tin.","Whisk the eggs with salt and pepper, then stir in the vegetables and chives.","Pour into the cups and bake 18–20 minutes until set in the middle.","Cool 5 minutes before lifting out. Keep extras in the fridge up to 4 days and reheat 30 seconds in the microwave."]},
+ l1:{t:[10,25],g:[[0.5,"cup","cooked green lentils (or ¼ cup dry)",100],[1,"","small zucchini, chopped"],[0.25,"","red onion, in wedges"],[1,"cup","arugula",20],[1,"tbsp","tahini",15],[0.5,"","lemon, juiced"],[1,"tsp","olive oil",5],[null,"","salt and pepper"]],
+  s:["Heat the oven to 425°F (220°C). Toss the zucchini and onion with the oil, salt and pepper and roast 20–25 minutes until browned.","If using dry lentils, simmer them in plenty of water for 20 minutes until tender, then drain.","Whisk the tahini with the lemon juice and 1–2 tbsp water until pourable. Season with salt.","Toss the lentils, roasted vegetables and arugula, then drizzle with the tahini dressing."]},
+ l2:{t:[10,15],g:[[5,"oz","chicken breast",140],[0.5,"cup","cooked quinoa",90],[0.5,"","cucumber, sliced"],[1,"cup","baby spinach",30],[2,"tsp","olive oil",10],[0.5,"","lemon"],[0.5,"tsp","dried oregano"],[null,"","salt and pepper"]],
+  s:["Season the chicken with oregano, salt, pepper and 1 tsp of the oil.","Grill or pan-cook over medium-high heat for 5–7 minutes per side, until the inside reaches 165°F (74°C). Rest 5 minutes, then slice.","Arrange the spinach, quinoa and cucumber in a bowl and add the chicken.","Dress with the remaining oil and a squeeze of lemon."]},
+ l3:{t:[10,20],g:[[4,"oz","salmon fillet",115],[1,"","large egg"],[0.5,"cup","green beans, trimmed",60],[3,"","baby potatoes, halved",100],[6,"","olives"],[2,"cups","mixed greens",60],[1,"tsp","olive oil",5],[1,"tsp","red wine vinegar",5],[0.5,"tsp","Dijon mustard"]],
+  s:["Heat the oven to 400°F (200°C). Season the salmon and roast 12–15 minutes until it flakes.","Meanwhile boil the potatoes 12 minutes. Add the egg for the last 9 minutes and the green beans for the last 3.","Cool the egg in cold water, peel and quarter it.","Whisk the oil, vinegar and mustard. Arrange everything on the greens, flake the salmon on top and drizzle with the dressing."]},
+ l4:{t:[5,0],g:[[1,"","large whole-wheat tortilla"],[3,"tbsp","hummus",45],[3,"oz","sliced turkey breast (lower sodium)",85],[1,"cup","shredded romaine",40],[0.5,"","tomato, sliced"]],
+  s:["Spread the hummus over the tortilla, leaving a border.","Layer the turkey, lettuce and tomato down the middle.","Fold in the sides and roll up tightly. Cut in half."]},
+ l5:{t:[10,20],g:[[0.75,"cup","canned chickpeas, rinsed",125],[2,"cups","baby spinach",60],[0.5,"cup","canned crushed tomatoes",120],[1,"tsp","curry powder"],[1,"tsp","grated fresh ginger"],[1,"tsp","olive oil",5],[0.5,"cup","cooked brown rice",100],[null,"","salt"]],
+  s:["Heat the oil in a pan over medium heat. Add the ginger and curry powder and stir for 30 seconds until fragrant.","Add the tomatoes and chickpeas with a pinch of salt and simmer 10 minutes, adding a splash of water if it gets thick.","Stir in the spinach until wilted.","Serve over the brown rice."]},
+ l6:{t:[5,0],g:[[1,"","ripe avocado, halved and pitted"],[1,"can","tuna in water, drained (5 oz)",140],[0.5,"","lemon"],[0.5,"","cucumber, sliced"],[null,"","salt, pepper, chili flakes"]],
+  s:["Mix the tuna with lemon juice, pepper and a pinch of salt.","Scoop a little extra avocado out of each half, mash it into the tuna, then pile the tuna into the halves.","Serve with the cucumber slices."]},
+ l7:{t:[10,25],g:[[1,"","small sweet potato, cubed",150],[0.5,"cup","black beans, rinsed (low sodium)",90],[0.5,"cup","cooked brown rice",100],[0.25,"","avocado, sliced"],[3,"tbsp","salsa",45],[1,"tsp","olive oil",5],[0.5,"tsp","chili powder"],[0.5,"","lime"]],
+  s:["Heat the oven to 425°F (220°C). Toss the sweet potato with oil and chili powder and roast 20–25 minutes.","Warm the beans and rice.","Build the bowl: rice, beans, sweet potato, avocado and salsa. Squeeze lime over."]},
+ l8:{t:[5,10],g:[[1.5,"tbsp","white miso",25],[2,"cups","water",480],[3,"oz","silken tofu, cubed",85],[2,"oz","dry soba noodles",55],[1,"","head baby bok choy, quartered"],[1,"","scallion, sliced"]],
+  s:["Cook the soba as the package says (about 4 minutes), drain and rinse.","Bring the water to a simmer, add the bok choy and cook 2 minutes.","Turn off the heat. Whisk the miso with a ladle of the hot broth, then stir it back into the pot (don't boil miso).","Add the tofu and noodles, and top with scallion."]},
+ l9:{t:[10,25],g:[[0.33,"cup","dry farro",65],[0.5,"cup","cherry tomatoes, halved",75],[0.5,"","cucumber, diced"],[2,"tbsp","crumbled feta",20],[1,"tbsp","chopped parsley"],[2,"tsp","olive oil",10],[1,"tsp","red wine vinegar",5]],
+  s:["Simmer the farro in salted water for 20–25 minutes until chewy-tender. Drain and cool a little.","Toss with the tomatoes, cucumber, parsley, oil and vinegar.","Top with feta. Keeps 3 days in the fridge."]},
+ l10:{t:[0,0],g:[[1,"","cheeseburger"],[1,"","medium fries"]],
+  s:["An occasional takeout meal. A single patty, a side salad instead of fries, or water instead of soda all help."]},
+ l11:{t:[5,10],g:[[2,"","large eggs"],[1,"tbsp","olive-oil mayonnaise",14],[1,"tsp","Dijon mustard"],[1,"tbsp","chopped chives"],[4,"","butter lettuce leaves"],[null,"","salt and pepper"]],
+  s:["Cover the eggs with water, bring to a boil, then simmer 9 minutes. Cool in cold water and peel.","Chop the eggs and mix with the mayo, mustard, chives, salt and pepper.","Spoon into the lettuce leaves."]},
+ l12:{t:[10,25],g:[[4,"oz","chicken breast",115],[2,"cups","low-sodium chicken broth",480],[0.25,"cup","white rice",45],[1,"","carrot, sliced"],[1,"tbsp","chopped parsley"],[null,"","salt and pepper"]],
+  s:["Bring the broth to a simmer. Add the chicken and carrot and simmer gently for 15 minutes.","Lift out the chicken, shred it with two forks and return it to the pot.","Add the rice and simmer 12–15 minutes until tender.","Season lightly and stir in the parsley."]},
+ l13:{t:[10,12],g:[[3,"oz","tempeh, sliced",85],[0.5,"cup","shelled edamame",75],[1,"cup","broccoli florets",90],[0.5,"cup","cooked brown rice",100],[1,"tbsp","low-sodium soy sauce",15],[1,"tsp","sesame oil (or olive oil)",5],[1,"tsp","grated ginger"]],
+  s:["Heat the oil in a pan over medium-high heat. Brown the tempeh 3 minutes per side, then set aside.","Add the broccoli, edamame and 2 tbsp water, cover and steam 3 minutes.","Return the tempeh, add the ginger and soy sauce and toss for 1 minute.","Serve over the rice."]},
+ l14:{t:[15,0],g:[[4,"oz","cooked shrimp",115],[4,"","rice paper wrappers"],[0.5,"","mango, cut in strips"],[0.25,"cup","fresh mint and cilantro"],[1,"cup","shredded lettuce",40],[1,"tbsp","peanut butter",16],[1,"tsp","lime juice"],[1,"tsp","low-sodium soy sauce"]],
+  s:["Dip one rice paper in warm water for 5 seconds and lay it flat on a damp board.","Lay lettuce, mango, herbs and shrimp in the lower third. Fold the bottom over, fold in the sides and roll up tight. Repeat.","Whisk the peanut butter, lime, soy sauce and 1–2 tbsp warm water into a dipping sauce."]},
+ l15:{t:[10,8],g:[[4,"oz","ground chicken",115],[1,"tsp","grated ginger"],[1,"tsp","olive oil",5],[1,"tsp","low-sodium soy sauce"],[5,"","butter lettuce leaves"],[0.5,"","cucumber, in matchsticks"],[1,"","carrot, grated"]],
+  s:["Heat the oil in a pan over medium-high heat. Add the chicken and ginger and break up as it cooks, 6–7 minutes.","Stir in the soy sauce.","Spoon into the lettuce leaves and top with cucumber and carrot."]},
+ l16:{t:[10,0],g:[[4,"oz","cooked shrimp",115],[0.5,"","avocado, cubed"],[1,"","orange, segmented"],[2,"cups","mixed greens",60],[2,"tsp","olive oil",10],[0.5,"","lime"],[null,"","salt and pepper"]],
+  s:["Whisk the oil, lime juice, salt and pepper.","Toss the greens with half the dressing.","Top with the shrimp, avocado and orange, and drizzle with the rest."]},
+ d1:{t:[5,15],g:[[5,"oz","salmon fillet",140],[1,"cup","green beans, trimmed",110],[0.5,"cup","cooked quinoa",90],[1,"tsp","olive oil",5],[0.5,"","lemon"],[null,"","salt, pepper, dill"]],
+  s:["Heat the oven to 400°F (200°C) and line a tray with parchment.","Toss the green beans with the oil, salt and pepper and spread on the tray. Put the salmon in the middle and season with salt, pepper and dill.","Roast 12–15 minutes until the salmon flakes easily.","Squeeze lemon over and serve with the quinoa."]},
+ d2:{t:[10,30],g:[[4,"oz","ground turkey (93% lean)",115],[0.5,"cup","kidney beans, rinsed",90],[0.75,"cup","canned crushed tomatoes",180],[0.25,"","onion, diced"],[1,"tsp","chili powder"],[0.5,"tsp","ground cumin"],[1,"tsp","olive oil",5],[null,"","salt"]],
+  s:["Heat the oil in a pot over medium heat. Cook the onion 4 minutes until soft.","Add the turkey and break it up as it browns, about 5 minutes. Stir in the spices for 30 seconds.","Add the tomatoes, beans and ¼ cup water. Simmer, partly covered, for 20–25 minutes.","Season to taste. Chili tastes even better the next day and freezes well."]},
+ d3:{t:[10,30],g:[[5,"oz","chicken breast",140],[1,"","small sweet potato, in wedges",150],[1,"cup","green beans",110],[2,"tsp","olive oil",10],[0.5,"","lemon"],[1,"tsp","chopped rosemary"],[null,"","salt and pepper"]],
+  s:["Heat the oven to 425°F (220°C). Toss the sweet potato with 1 tsp oil, salt and pepper and roast 10 minutes.","Rub the chicken with the remaining oil, rosemary, lemon zest, salt and pepper. Add to the tray and roast 18–20 minutes, until the chicken reaches 165°F (74°C).","Steam the green beans for 4 minutes.","Squeeze the lemon over the chicken and serve."]},
+ d4:{t:[10,30],g:[[0.33,"cup","dry red lentils, rinsed",65],[2,"oz","whole-wheat spaghetti",55],[0.75,"cup","canned crushed tomatoes",180],[0.5,"","carrot, finely diced"],[0.5,"","celery stalk, finely diced"],[1,"tsp","olive oil",5],[0.5,"tsp","dried oregano"],[null,"","salt and pepper"]],
+  s:["Heat the oil in a pot over medium heat. Cook the carrot and celery 5 minutes.","Add the lentils, tomatoes, oregano and ¾ cup water. Simmer 20–25 minutes, stirring often, until the lentils break down into a thick sauce.","Meanwhile cook the spaghetti as the package says and drain.","Season the sauce and toss with the pasta."]},
+ d5:{t:[10,10],g:[[4,"oz","flank steak, sliced thin across the grain",115],[1.5,"cups","broccoli florets",135],[0.5,"cup","cooked brown rice",100],[1,"tbsp","low-sodium soy sauce",15],[1,"tsp","cornstarch"],[1,"","garlic clove, minced"],[2,"tsp","oil",10]],
+  s:["Toss the beef with half the soy sauce and the cornstarch.","Heat half the oil in a pan over high heat. Sear the beef in one layer, 1–2 minutes, then set aside.","Add the rest of the oil, the broccoli and 2 tbsp water. Cover and steam 3 minutes.","Add the garlic, beef and remaining soy sauce and toss 1 minute. Serve over rice."]},
+ d6:{t:[10,20],g:[[5,"oz","cod fillet",140],[0.5,"cup","cannellini beans, rinsed",90],[1,"cup","cherry tomatoes",150],[6,"","olives, halved"],[1,"tsp","olive oil",5],[1,"","garlic clove, sliced"],[null,"","fresh basil, salt, pepper"]],
+  s:["Heat the oven to 400°F (200°C).","Toss the beans, tomatoes, olives, garlic and oil in a small baking dish.","Season the cod and nestle it on top.","Bake 15–18 minutes until the cod flakes and the tomatoes burst. Top with basil."]},
+ d7:{t:[10,20],g:[[5,"oz","firm tofu, cubed",140],[0.5,"cup","light coconut milk",120],[1,"","bell pepper, sliced"],[1,"cup","spinach",30],[1,"tbsp","red curry paste",15],[0.5,"cup","cooked brown rice",100],[1,"tsp","oil",5]],
+  s:["Heat the oil in a pan over medium-high heat. Brown the tofu on a few sides, about 6 minutes, then set aside.","Fry the curry paste for 30 seconds, then add the coconut milk and pepper. Simmer 8 minutes.","Return the tofu, stir in the spinach until wilted.","Serve over the rice."]},
+ d8:{t:[15,25],g:[[4,"oz","ground turkey",115],[1,"tbsp","beaten egg"],[1,"tbsp","grated parmesan",6],[0.5,"cup","marinara (no sugar added)",120],[1,"","medium zucchini, spiralized",200],[null,"","Italian seasoning, salt, pepper"]],
+  s:["Heat the oven to 400°F (200°C).","Mix the turkey, egg, parmesan, seasoning, salt and pepper. Roll into 6 balls and bake 15–18 minutes.","Warm the marinara and add the meatballs.","Sauté the zucchini noodles 2 minutes (don't overcook). Top with the meatballs and sauce."]},
+ d9:{t:[10,30],g:[[1,"","large bell pepper, halved and seeded"],[0.5,"cup","cooked brown rice",100],[0.5,"cup","black beans, rinsed",90],[3,"tbsp","salsa",45],[0.5,"tsp","ground cumin"],[null,"","cilantro"]],
+  s:["Heat the oven to 375°F (190°C).","Mix the rice, beans, salsa and cumin.","Fill the pepper halves and set them in a baking dish with 2 tbsp water. Cover with foil.","Bake 25 minutes, uncover and bake 5 more. Top with cilantro."]},
+ d10:{t:[10,10],g:[[5,"oz","shrimp, peeled",140],[1,"","bell pepper, sliced"],[0.5,"","onion, sliced"],[2,"","corn tortillas"],[1,"tsp","chili powder"],[0.5,"tsp","ground cumin"],[2,"tsp","oil",10],[0.5,"","lime"]],
+  s:["Toss the shrimp with half the spices.","Heat the oil in a pan over high heat. Cook the pepper and onion with the rest of the spices for 5 minutes.","Add the shrimp and cook 2–3 minutes until pink.","Squeeze lime over and serve in warmed tortillas."]},
+ d11:{t:[0,15],g:[[3,"slices","pepperoni pizza"]],
+  s:["Pizza night, kept occasional. Add a big side salad and stop at two slices if you can."]},
+ d12:{t:[10,20],g:[[5,"oz","sirloin steak",140],[2,"cups","cauliflower florets",200],[6,"","asparagus spears"],[2,"tsp","butter",10],[1,"tsp","olive oil",5],[null,"","salt, pepper, garlic powder"]],
+  s:["Heat the oven to 425°F (220°C). Toss the asparagus with oil and salt and roast 10–12 minutes.","Steam the cauliflower 10 minutes until very soft. Mash with the butter, garlic powder, salt and pepper.","Season the steak and sear in a hot pan 3–4 minutes per side for medium. Rest 5 minutes before slicing."]},
+ d13:{t:[10,35],g:[[2,"","bone-in chicken thighs, skin removed",200],[2,"","carrots, in chunks"],[4,"","baby potatoes, halved",130],[2,"tsp","olive oil",10],[1,"tsp","fresh thyme leaves"],[null,"","salt and pepper"]],
+  s:["Heat the oven to 425°F (220°C).","Toss the carrots and potatoes with half the oil, thyme, salt and pepper on a tray.","Rub the chicken with the rest of the oil and seasonings and add it to the tray.","Roast 35 minutes until the chicken reaches 175°F (80°C) and the vegetables are golden."]},
+ d14:{t:[10,20],g:[[4,"oz","mackerel fillet",115],[0.33,"cup","jasmine rice",60],[1,"tsp","grated ginger"],[2,"","heads baby bok choy, halved"],[1,"tsp","low-sodium soy sauce"],[null,"","lime"]],
+  s:["Rinse the rice and cook with ⅔ cup water and the ginger, covered, on low for 15 minutes. Rest 5 minutes.","Heat the broiler. Broil the mackerel skin-side up for 5–6 minutes until the skin crisps.","Steam the bok choy 3 minutes and drizzle with the soy sauce.","Serve the fish over the rice with lime."]},
+ d15:{t:[10,30],g:[[0.5,"","head cauliflower, cut into 2 thick slices"],[0.5,"cup","chickpeas, rinsed and patted dry",85],[1,"tbsp","tahini",15],[0.5,"","lemon, juiced"],[2,"tsp","olive oil",10],[0.5,"tsp","smoked paprika"],[null,"","parsley, salt"]],
+  s:["Heat the oven to 425°F (220°C). Brush the cauliflower with oil and season with paprika and salt.","Toss the chickpeas with the remaining oil and salt. Roast with the cauliflower for 25–30 minutes, flipping the cauliflower halfway.","Whisk the tahini, lemon and 1–2 tbsp water.","Drizzle the sauce over the cauliflower, scatter the chickpeas and parsley."]},
+ d16:{t:[10,20],g:[[5,"oz","extra-firm tofu, cubed",140],[4,"cups","spinach",120],[0.5,"cup","light coconut milk",120],[1,"tsp","garam masala"],[1,"tsp","grated ginger"],[1,"","garlic clove"],[1,"tsp","oil",5],[null,"","salt"]],
+  s:["Brown the tofu in the oil over medium-high heat, about 6 minutes. Set aside.","In the same pan, wilt the spinach with the ginger and garlic.","Blend the spinach with the coconut milk, garam masala and salt until smooth.","Return to the pan, add the tofu and simmer 5 minutes."]},
+ d17:{t:[10,32],g:[[5,"oz","cod fillet",140],[1,"","zucchini, in half-moons"],[4,"","baby potatoes, halved",130],[1,"tbsp","chopped parsley"],[0.5,"","lemon, zested"],[2,"tsp","olive oil",10],[null,"","salt and pepper"]],
+  s:["Heat the oven to 425°F (220°C). Toss the potatoes with half the oil and salt and roast 20 minutes.","Add the zucchini to the tray. Lay the cod alongside and top it with parsley, lemon zest and the rest of the oil.","Roast 12 more minutes until the cod flakes."]},
+ d18:{t:[10,25],g:[[1,"","large zucchini, halved lengthwise"],[4,"oz","ground turkey",115],[0.5,"cup","marinara (no sugar added)",120],[null,"","fresh basil"],[null,"","salt and pepper"]],
+  s:["Heat the oven to 400°F (200°C). Scoop the seeds out of the zucchini halves.","Brown the turkey in a pan, then stir in the marinara and simmer 3 minutes.","Fill the zucchini, cover with foil and bake 20 minutes.","Top with basil."]},
+ s1:{t:[3,0],g:[[1,"","apple, sliced"],[1,"tbsp","almond butter",16]],s:["Slice the apple and dip in the almond butter."]},
+ s2:{t:[5,0],g:[[3,"tbsp","hummus",45],[1,"","carrot, in sticks"],[0.5,"","cucumber, in sticks"]],s:["Cut the vegetables into sticks and serve with the hummus."]},
+ s3:{t:[2,10],g:[[2,"","large eggs"],[0.5,"cup","cherry tomatoes",75],[null,"","salt and pepper"]],s:["Simmer the eggs 9 minutes, then cool in cold water and peel.","Serve with the tomatoes and a pinch of salt and pepper. Boil a batch to last 4 days."]},
+ s4:{t:[1,0],g:[[0.25,"cup","unsalted mixed nuts",30]],s:["Measure out a quarter cup. It's easy to eat more straight from the bag."]},
+ s5:{t:[2,0],g:[[0.75,"cup","plain Greek yogurt",170],[0.25,"tsp","cinnamon"]],s:["Stir the cinnamon into the yogurt."]},
+ s6:{t:[1,5],g:[[1,"cup","frozen edamame in pods",155],[null,"","pinch of flaky salt"]],s:["Steam or microwave the edamame for 4–5 minutes.","Sprinkle lightly with salt."]},
+ s7:{t:[5,30],g:[[0.5,"cup","canned chickpeas, rinsed and dried",85],[1,"tsp","olive oil",5],[0.5,"tsp","smoked paprika"],[null,"","salt"]],s:["Heat the oven to 400°F (200°C).","Toss the chickpeas with oil, paprika and salt and spread on a tray.","Roast 25–30 minutes, shaking halfway, until crunchy. They crisp more as they cool."]},
+ s8:{t:[3,0],g:[[1,"oz","cheddar, cubed",28],[8,"","olives"]],s:["Portion the cheese and olives into a small container."]},
+ s9:{t:[2,0],g:[[1,"cup","strawberries",150],[1,"square","70% dark chocolate",10]],s:["Rinse the berries and enjoy with the chocolate."]},
+ s10:{t:[0,0],g:[[1,"","small bag of potato chips"],[1,"can","soda"]],s:["An occasional treat. Sparkling water with the chips saves about 39 g of sugar."]},
+ s11:{t:[2,0],g:[[1,"","banana"],[1,"tbsp","natural peanut butter",16]],s:["Slice the banana and spread or dip in the peanut butter."]},
+ s12:{t:[3,0],g:[[2,"","brown rice cakes"],[0.33,"","avocado"],[null,"","salt, pepper, lemon"]],s:["Mash the avocado with lemon, salt and pepper.","Spread on the rice cakes."]},
+ s13:{t:[1,4],g:[[3,"tbsp","raw pumpkin seeds",27],[null,"","pinch of salt"]],s:["Toast the seeds in a dry pan over medium heat for 3–4 minutes, shaking, until they puff and pop.","Salt lightly and cool."]},
+ s14:{t:[5,0],g:[[0.5,"","cucumber, in thick rounds"],[1.5,"oz","smoked salmon",40],[null,"","fresh dill, lemon"]],s:["Top each cucumber round with a piece of salmon, a squeeze of lemon and dill."]},
+ s15:{t:[2,0],g:[[1,"","orange"],[7,"","walnut halves",14]],s:["Peel the orange and enjoy with the walnuts."]}
+};
+const FRACS=[[0.125,"⅛"],[0.25,"¼"],[0.33,"⅓"],[0.5,"½"],[0.67,"⅔"],[0.75,"¾"]];
+function fmtQty(q,unit){
+  {
+    const whole=Math.floor(q+1e-6); const rest=q-whole;
+    if(rest<0.07) return String(whole||(unit?"⅛":"1"));
+    if(rest>0.92) return String(whole+1);
+    const [,f]=FRACS.reduce((a,b)=>Math.abs(b[0]-rest)<Math.abs(a[0]-rest)?b:a);
+    return (whole?whole+" ":"")+f;
+  }
+}
+function ingredientLine([q,u,name,metric],scale){
+  if(q==null) return esc(name);
+  const qty=q*scale; let unit=u;
+  if(u==="cup"&&qty>1.05) unit="cups"; if(u==="cups"&&qty<=1.05) unit="cup";
+  const m=metric?` <span class="muted">(${Math.round(metric*scale)} ${/milk|broth|water/.test(name)&&u==="cup"?"ml":"g"})</span>`:"";
+  return `<b>${fmtQty(qty,u)}${unit?" "+unit:""}</b> ${esc(name)}${m}`;
+}
+function fullRecipeHTML(r,mult){
+  const f=FULL[r.id]; if(!f) return `<p class="small">${esc(r.h)}</p>`;
+  const people=S.cookFor||1, scale=mult*people;
+  const [prep,cook]=f.t;
+  const time=prep+cook?`${prep?prep+" min prep":""}${prep&&cook?" · ":""}${cook?cook+" min cook":""}`:"Ready to eat";
+  return `<div class="recipe">
+    <div class="rmeta"><span class="pill">${time}</span>
+      <span class="stepper" role="group" aria-label="Number of people"><button type="button" class="btn ghost" data-act="cookfor" data-d="-1" aria-label="Fewer people">−</button><span class="small">Cooking for <b>${people}</b></span><button type="button" class="btn ghost" data-act="cookfor" data-d="1" aria-label="More people">+</button></span></div>
+    ${mult!==1?`<p class="small muted">Amounts are scaled to your ${mult}× portion${people>1?` and ${people} people`:""}.</p>`:people>1?`<p class="small muted">Amounts are for ${people} people.</p>`:""}
+    <h4>Ingredients</h4>
+    <ul class="ing">${f.g.map(g=>`<li>${ingredientLine(g,scale)}</li>`).join("")}</ul>
+    <h4>Steps</h4>
+    <ol class="steps">${f.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+    <p class="small muted">Per your portion: ${Math.round(r.k*mult)} kcal · ${Math.round(r.p*mult)} g protein · ${Math.round(r.c*mult)} g carbs · ${Math.round(r.f*mult)} g fat · ${Math.round(r.fi*mult)} g fiber · ${Math.round(r.na*mult)} mg sodium (approx.)</p>
+  </div>`;
+}
+
 const R = [
  // breakfast
  {id:"b1",m:"b",n:"Chia oats with blueberries",k:380,p:14,c:55,f:11,fi:9,na:90,x:"",t:"gi fi na ai sf gn",i:"g:Rolled oats (certified GF if needed)|c:Chia seeds|f:Frozen blueberries|d:Unsweetened oat milk|c:Cinnamon",h:"Stir oats, chia and oat milk in a jar, top with berries and cinnamon, chill overnight."},
@@ -423,7 +583,7 @@ const EXAMPLE_PROFILE = {sex:"female",age:34,heightCm:168,weightKg:82,goalKg:72,
 
 /* ---------------- state ---------------- */
 const S = {tab:"plan",day:(new Date().getDay()+6)%7,profile:{...EXAMPLE_PROFILE},isExample:true,seed:20261108,overrides:{},
-  draft:null, logs:{}, logOpen:null, scans:[], scan:null, scanBusy:false, photo:null, store:"local", loaded:false};
+  draft:null, openRecipes:new Set(), cookFor:1, logs:{}, logOpen:null, scans:[], scan:null, scanBusy:false, photo:null, store:"local", loaded:false};
 
 /* ---------------- helpers ---------------- */
 const $ = s=>document.querySelector(s);
@@ -644,7 +804,7 @@ const passMark = p=>[0,35,45,55,65,75][p.strict];
 /* ---------------- storage (this device only) ---------------- */
 function initStore(){
   const v=ls.get("state"); if(v) applySaved(v);
-  S.logs=loadLogs();
+  S.logs=loadLogs(); S.cookFor=clamp(+ls.get("cookFor")||1,1,8);
   const sc=ls.get("scans"); if(Array.isArray(sc)) S.scans=sc.filter(s=>s&&s.input&&s.n);
   S.loaded=true; render();
 }
@@ -721,7 +881,7 @@ function mealCard(x,t){
    <h3>${esc(r.n)}</h3>
    <div class="stats"><span><b>${Math.round(r.k*m)}</b> kcal</span><span><b>${Math.round(r.p*m)}g</b> protein</span><span><b>${Math.round(r.c*m)}g</b> carbs</span><span><b>${Math.round(r.f*m)}g</b> fat</span></div>
    <div class="tags">${tags.map(t=>`<span class="pill ${want.has(t)?"acc":""}">${TRAIT_LABEL[t]}</span>`).join("")}</div>
-   <details><summary>Ingredients & how to make it</summary><ul>${r.i.split("|").map(s=>`<li>${esc(s.slice(2))}</li>`).join("")}</ul><p class="small">${esc(r.h)}</p><p class="small muted">Fiber ${Math.round(r.fi*m)} g · Sodium ${Math.round(r.na*m)} mg (approx.)</p></details>
+   <details class="rdetails" data-key="${x.key}" ${S.openRecipes.has(x.key)?"open":""}><summary>Full recipe</summary>${fullRecipeHTML(r,m)}</details>
    <div class="acts"><button class="btn" data-act="swap" data-key="${x.key}">Swap meal</button><button class="btn" data-act="logopen" data-k="${x.meal.k}">I ate something else</button></div></article>`;
 }
 function planNotes(p,t){
@@ -1143,6 +1303,7 @@ document.addEventListener("click",e=>{
   if(a==="preset"){const m=MEAL_PRESETS[+b.dataset.i];const set=(id,v)=>{const el=document.getElementById(id);if(el) el.value=v};
     set("lg-n",m.fl.includes("skip")?"Skipped":m.n);["k","p","c","f","fi","na","sug"].forEach(k=>set("lg-"+k,m[k]));
     FLAGS.forEach(([k])=>{const el=document.getElementById("lg-fl-"+k);if(el) el.checked=m.fl.includes(k)})}
+  if(a==="cookfor"){S.cookFor=clamp((S.cookFor||1)+(+b.dataset.d),1,8);ls.set("cookFor",S.cookFor);render()}
   if(a==="camera"){openCamera()}
   if(a==="closecam"){closeCamera()}
   if(a==="hist"){showProduct(S.scans[+b.dataset.i])}
@@ -1169,6 +1330,7 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="manual"){const input=readManual(); if(["kcal","sugar","satFat","sodium","fiber","protein"].every(k=>input[k]==="")){toast("Enter at least one number from the label");return}
     S.manualName=""; showProduct({input,n:per100(input),off:null,at:Date.now()})}
 });
+document.addEventListener("toggle",e=>{const d=e.target; if(d.classList?.contains("rdetails")){ if(d.open) S.openRecipes.add(d.dataset.key); else S.openRecipes.delete(d.dataset.key);} },true);
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("#cam").hidden) closeCamera(); });
 document.addEventListener("visibilitychange",()=>{ if(document.hidden&&Cam.stream) closeCamera(); });
 
