@@ -159,6 +159,21 @@ section.view{display:flex;flex-direction:column;gap:22px}
 .why li::before{position:absolute;left:0;font-weight:800}
 .why li.up::before{content:"+";color:var(--exc)}
 .why li.down::before{content:"−";color:var(--bad)}
+.cats{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.cats .chip{flex:none}
+.foodlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:300px;overflow-y:auto;padding:2px}
+.food{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit;color:inherit;min-width:0}
+.food span:first-child{font-weight:600;font-size:.9rem;line-height:1.25}
+.food.on{border-color:var(--accent);background:var(--accent-soft)}
+.pickbox{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.picked{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.picked li{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.picked .qty{display:inline-flex;align-items:center;gap:4px}
+.picked .qty .btn{padding:2px 10px}
+.manual summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--accent)}
+.manual{display:flex;flex-direction:column;gap:10px}
+.manual[open]>*:not(summary){margin-top:10px}
+.actsrow{display:flex;gap:8px;flex-wrap:wrap}
 .logform{display:flex;flex-direction:column;gap:10px}
 .presets{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
 .presets .chip{flex:none}
@@ -174,7 +189,7 @@ legend{font-family:var(--display);font-weight:700;font-size:1.1rem;padding:0 6px
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label,.lbl{font-size:.82rem;font-weight:600;color:var(--muted)}
-input[type=number],input[type=text],select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 11px;width:100%;min-width:0}
+input[type=number],input[type=text],input[type=search],select,textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 11px;width:100%;min-width:0}
 textarea{resize:vertical;min-height:70px}
 .goalcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .goalcard{border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;background:var(--bg);text-align:left;display:flex;flex-direction:column;gap:2px}
@@ -901,23 +916,189 @@ function groceryHTML(plan){
 }
 
 /* ---- "I ate something else": custom meal logging and rating ---- */
-// Typical restaurant/takeout estimates so people don't need to know macros. Users can edit every number.
-const MEAL_PRESETS=[
- {n:"Burger & fries",k:980,p:42,c:82,f:52,fi:5,na:1600,sug:10,fl:["fried","proc"]},
- {n:"Pizza (2 slices)",k:570,p:24,c:64,f:24,fi:4,na:1300,sug:6,fl:["proc"]},
- {n:"Burrito",k:1000,p:45,c:110,f:38,fi:14,na:2000,sug:6,fl:["veg"]},
- {n:"Fried chicken meal",k:900,p:45,c:60,f:50,fi:3,na:2000,sug:4,fl:["fried","proc"]},
- {n:"Sub sandwich",k:600,p:30,c:60,f:22,fi:5,na:1500,sug:8,fl:["veg"]},
- {n:"Chicken salad",k:450,p:35,c:15,f:28,fi:5,na:700,sug:6,fl:["veg"]},
- {n:"Sushi (2 rolls)",k:500,p:20,c:90,f:6,fi:3,na:1200,sug:12,fl:[]},
- {n:"Pasta with red sauce",k:650,p:20,c:100,f:15,fi:8,na:900,sug:12,fl:["veg"]},
- {n:"Ramen",k:600,p:20,c:80,f:20,fi:3,na:2500,sug:4,fl:["proc"]},
- {n:"Coffee drink & pastry",k:650,p:10,c:85,f:28,fi:2,na:450,sug:50,fl:["sweet","proc"]},
- {n:"Smoothie bowl",k:450,p:10,c:80,f:10,fi:9,na:100,sug:45,fl:["sweet"]},
- {n:"Home-cooked meat & veg",k:550,p:40,c:35,f:22,fi:6,na:600,sug:6,fl:["veg","home"]},
- {n:"Skipped this meal",k:0,p:0,c:0,f:0,fi:0,na:0,sug:0,fl:["skip"]}
+// Common foods with typical portion estimates: [category, name, kcal, protein, carbs, fat, fiber, sodium mg, sugar g, flags]
+const FOOD_CATS=["Fast food","Restaurant & takeout","Breakfast","Home & quick meals","Sides & salads","Snacks & sweets","Fruit & veg","Drinks"];
+const FOODS_RAW=[
+ // Fast food
+ [0,"Cheeseburger",300,15,33,12,2,740,7,"proc"],
+ [0,"Double cheeseburger",450,25,34,24,2,1050,7,"proc"],
+ [0,"Quarter-pound burger with cheese",520,30,42,26,3,1100,10,"proc"],
+ [0,"Fries, medium",320,4,43,15,4,260,0,"fried proc"],
+ [0,"Fries, large",490,6,66,23,6,400,0,"fried proc"],
+ [0,"Chicken nuggets (10)",420,23,26,25,2,850,0,"fried proc"],
+ [0,"Fried chicken sandwich",520,28,50,23,2,1300,7,"fried proc"],
+ [0,"Grilled chicken sandwich",380,35,40,8,3,900,8,"proc"],
+ [0,"Fried chicken (2 pieces)",560,40,16,36,1,1400,0,"fried proc"],
+ [0,"Chicken tenders (3)",360,26,22,18,1,950,0,"fried proc"],
+ [0,"Hot dog",290,11,24,17,1,820,4,"proc"],
+ [0,"Crunchy beef taco",170,8,13,10,3,300,1,"proc"],
+ [0,"Soft chicken taco",180,12,16,6,2,500,1,""],
+ [0,"Chicken burrito",1000,50,110,35,14,2100,6,"veg"],
+ [0,"Chicken burrito bowl",650,45,60,24,13,1600,5,"veg"],
+ [0,"Chicken quesadilla",520,28,40,26,3,1200,3,"proc"],
+ [0,"Nachos with cheese",560,14,56,32,5,1000,3,"proc"],
+ [0,"Cheese pizza, 1 slice",285,12,36,10,2,640,4,"proc"],
+ [0,"Pepperoni pizza, 1 slice",310,13,35,13,2,740,4,"proc"],
+ [0,"6-inch sub sandwich",400,22,46,14,5,1100,7,"veg"],
+ [0,"12-inch sub sandwich",800,44,92,28,10,2200,14,"veg"],
+ [0,"Onion rings, medium",410,5,46,23,3,580,6,"fried proc"],
+ // Restaurant & takeout
+ [1,"California roll (8 pieces)",260,9,38,7,3,580,7,""],
+ [1,"Spicy tuna roll (8 pieces)",300,14,38,10,3,600,6,""],
+ [1,"Salmon nigiri (4 pieces)",280,18,38,5,0,520,6,""],
+ [1,"Pad thai",900,35,110,32,5,2300,30,""],
+ [1,"Chicken fried rice",800,30,110,24,3,1700,5,"proc"],
+ [1,"General Tso's chicken with rice",1100,40,140,40,3,2400,50,"fried proc"],
+ [1,"Chicken teriyaki with rice",700,40,95,15,2,1800,25,""],
+ [1,"Ramen bowl",600,20,80,20,3,2500,4,"proc"],
+ [1,"Pho with beef",450,30,60,8,2,1900,4,"veg"],
+ [1,"Spaghetti with marinara",650,20,100,15,8,900,12,"veg"],
+ [1,"Fettuccine alfredo",1200,30,90,75,4,1500,4,""],
+ [1,"Steak dinner with baked potato",900,60,50,50,5,900,4,"veg"],
+ [1,"Grilled salmon with vegetables",600,45,25,32,6,700,5,"veg"],
+ [1,"Chicken Caesar salad",650,40,18,46,4,1300,4,"veg"],
+ [1,"Chicken curry with rice",850,40,95,32,5,1500,10,"veg"],
+ [1,"Chicken gyro",650,32,55,32,3,1500,5,"veg"],
+ [1,"Poke bowl",650,35,80,20,6,1300,12,"veg"],
+ [1,"Buffalo wings (10)",880,70,4,64,0,2600,1,"fried proc"],
+ [1,"BBQ ribs (half rack)",900,60,30,60,1,1400,25,"proc"],
+ [1,"Fish and chips",950,35,90,50,6,1500,2,"fried proc"],
+ // Breakfast
+ [2,"Bagel with cream cheese",450,13,60,17,2,600,8,""],
+ [2,"Egg & cheese sandwich",380,18,30,20,1,800,4,"proc"],
+ [2,"Bacon, egg & cheese biscuit",460,18,32,29,1,1300,3,"proc"],
+ [2,"Pancakes (3) with syrup & butter",620,10,105,18,2,1100,40,"sweet"],
+ [2,"Waffle with syrup",420,8,70,13,1,700,28,"sweet"],
+ [2,"Cereal with milk (1½ cups)",300,10,52,6,3,350,18,"proc"],
+ [2,"Oatmeal with fruit",300,9,54,6,7,120,14,"veg grain home"],
+ [2,"Yogurt parfait with granola",340,14,52,9,3,150,32,""],
+ [2,"Avocado toast",330,9,32,19,9,450,3,"veg"],
+ [2,"2 eggs with toast",320,17,26,15,3,450,3,"home"],
+ [2,"Breakfast burrito",550,25,48,28,4,1300,3,"proc"],
+ [2,"Croissant",280,6,31,15,2,320,6,""],
+ [2,"Glazed donut",260,3,31,14,1,230,14,"sweet proc"],
+ [2,"Blueberry muffin",420,6,60,17,2,400,32,"sweet"],
+ [2,"Bacon (3 slices)",130,9,0,10,0,520,0,"proc"],
+ [2,"Sausage links (2)",180,8,1,16,0,420,0,"proc"],
+ // Home & quick meals
+ [3,"Turkey sandwich",350,25,36,11,4,1000,5,"home"],
+ [3,"Peanut butter & jelly sandwich",380,12,48,16,4,450,18,"home"],
+ [3,"Grilled cheese",400,15,32,24,2,900,4,"home"],
+ [3,"Boxed mac & cheese (1 cup)",350,10,48,12,2,700,6,"proc"],
+ [3,"Instant noodles (1 pack)",380,8,52,14,2,1600,2,"proc"],
+ [3,"Frozen dinner",350,15,45,12,4,800,8,"proc"],
+ [3,"Chicken breast with rice",550,45,55,14,1,500,0,"home"],
+ [3,"Spaghetti & meatballs",700,32,85,25,7,1200,12,"home"],
+ [3,"Tuna salad sandwich",450,25,34,24,3,800,4,"home"],
+ [3,"Homemade stir-fry with rice",550,30,65,18,5,900,8,"veg home"],
+ [3,"Canned soup (1 can)",250,10,30,8,4,1800,6,"proc"],
+ [3,"Rice & beans",450,15,80,6,12,500,2,"grain home"],
+ [3,"Tacos at home (2)",420,24,30,22,4,700,3,"home"],
+ [3,"Leftover pizza (2 slices)",570,24,70,22,4,1300,8,"proc"],
+ // Sides & salads
+ [4,"Side salad with dressing",150,2,8,13,3,300,4,"veg"],
+ [4,"Garden salad, no dressing",50,2,10,0,3,40,5,"veg"],
+ [4,"White rice (1 cup)",205,4,45,0,1,0,0,""],
+ [4,"Brown rice (1 cup)",215,5,45,2,4,10,0,"grain"],
+ [4,"Mashed potatoes (1 cup)",240,4,35,9,3,650,3,""],
+ [4,"Coleslaw",200,1,15,15,2,300,12,""],
+ [4,"Garlic bread (2 pieces)",340,8,38,17,2,600,2,""],
+ [4,"Steamed vegetables (1 cup)",60,3,12,0,5,40,4,"veg"],
+ // Snacks & sweets
+ [5,"Potato chips (small bag)",160,2,15,10,1,170,0,"proc"],
+ [5,"Granola bar",190,3,29,7,2,150,12,"sweet"],
+ [5,"Protein bar",210,20,22,7,5,200,6,"proc"],
+ [5,"Handful of nuts",170,6,6,15,3,90,1,""],
+ [5,"Cookies (2)",220,2,30,11,1,150,18,"sweet proc"],
+ [5,"Candy bar",250,4,33,12,1,90,27,"sweet proc"],
+ [5,"Ice cream (1 cup)",280,5,32,15,1,110,28,"sweet"],
+ [5,"Movie popcorn, small",400,6,40,25,7,600,0,"proc"],
+ [5,"Cheese & crackers",250,9,18,16,1,450,1,""],
+ [5,"Trail mix (¼ cup)",175,5,16,11,2,80,8,""],
+ [5,"Slice of cake",400,4,55,19,1,320,40,"sweet"],
+ [5,"Brownie",240,3,35,11,1,150,22,"sweet"],
+ // Fruit & veg
+ [6,"Apple",95,0,25,0,4,2,19,"veg"],
+ [6,"Banana",105,1,27,0,3,1,14,"veg"],
+ [6,"Orange",62,1,15,0,3,0,12,"veg"],
+ [6,"Grapes (1 cup)",104,1,27,0,1,3,23,"veg"],
+ [6,"Berries (1 cup)",70,1,17,0,4,1,10,"veg"],
+ [6,"Baby carrots (1 cup)",50,1,12,0,4,100,7,"veg"],
+ // Drinks
+ [7,"Soda (12 oz)",150,0,39,0,0,45,39,"sweet"],
+ [7,"Diet soda (12 oz)",0,0,0,0,0,40,0,""],
+ [7,"Orange juice (12 oz)",165,3,39,0,1,5,32,""],
+ [7,"Latte (16 oz)",190,13,19,7,0,170,17,""],
+ [7,"Blended coffee drink (16 oz)",380,5,60,14,0,250,55,"sweet"],
+ [7,"Sweet tea (16 oz)",180,0,45,0,0,10,45,"sweet"],
+ [7,"Beer (12 oz)",150,2,13,0,0,15,0,""],
+ [7,"Glass of wine (5 oz)",125,0,4,0,0,5,1,""],
+ [7,"Fruit smoothie (16 oz)",300,4,70,1,4,40,55,"sweet"],
+ [7,"Energy drink (16 oz)",220,0,54,0,0,200,54,"sweet"],
+ [7,"Protein shake",160,30,5,3,1,250,2,""],
+ [7,"Milkshake (16 oz)",700,15,100,26,1,450,85,"sweet"]
 ];
+const FOODS=FOODS_RAW.map(([c,n,k,p,cb,f,fi,na,sug,fl],i)=>({id:"f"+i,c,n,k,p,c2:cb,f,fi,na,sug,fl:fl?fl.split(" "):[]}));
+const FOOD_BY_ID=Object.fromEntries(FOODS.map(x=>[x.id,x]));
 const FLAGS=[["veg","Had vegetables or fruit"],["grain","Whole grains"],["home","Home-cooked"],["fried","Fried"],["proc","Fast food / processed"],["sweet","Dessert or sugary drink"],["skip","Skipped the meal"]];
+
+/* picker state for the open log form */
+const Pick={items:[],cat:0,q:""};
+function pickTotals(){
+  const t={k:0,p:0,c:0,f:0,fi:0,na:0,sug:0,flags:new Set()};
+  Pick.items.forEach(({id,q})=>{const x=FOOD_BY_ID[id]; if(!x) return; t.k+=x.k*q;t.p+=x.p*q;t.c+=x.c2*q;t.f+=x.f*q;t.fi+=x.fi*q;t.na+=x.na*q;t.sug+=x.sug*q;x.fl.forEach(f=>t.flags.add(f));});
+  return t;
+}
+function pickerListHTML(){
+  const q=Pick.q.trim().toLowerCase();
+  const list=q?FOODS.filter(x=>x.n.toLowerCase().includes(q)):FOODS.filter(x=>x.c===Pick.cat);
+  if(!list.length) return `<p class="small muted">No match. Type the meal and its numbers below instead.</p>`;
+  const sel=Object.fromEntries(Pick.items.map(i=>[i.id,i.q]));
+  return list.map(x=>`<button type="button" class="food ${sel[x.id]?"on":""}" data-act="pick" data-id="${x.id}"><span>${esc(x.n)}</span><span class="small muted">${x.k} kcal${sel[x.id]?` · ×${sel[x.id]}`:""}</span></button>`).join("");
+}
+function pickedHTML(){
+  if(!Pick.items.length) return `<p class="small muted">Tap foods above to build your meal. Tap again to add another portion.</p>`;
+  const t=pickTotals();
+  return `<ul class="picked">${Pick.items.map(({id,q})=>{const x=FOOD_BY_ID[id];return `<li><span>${esc(x.n)}</span><span class="qty"><button type="button" class="btn ghost" data-act="pickq" data-id="${id}" data-d="-1" aria-label="One less">−</button><b>${q}</b><button type="button" class="btn ghost" data-act="pickq" data-id="${id}" data-d="1" aria-label="One more">+</button></span></li>`}).join("")}</ul>
+    <p class="small"><b>${Math.round(t.k)} kcal</b> · ${Math.round(t.p)} g protein · ${Math.round(t.c)} g carbs · ${Math.round(t.f)} g fat</p>`;
+}
+function refreshPicker(fill){
+  const L=document.getElementById("pick-list"), P=document.getElementById("picked");
+  if(L) L.innerHTML=pickerListHTML(); if(P) P.innerHTML=pickedHTML();
+  document.querySelectorAll("[data-act=pickcat]").forEach(b=>b.setAttribute("aria-pressed",!Pick.q&&+b.dataset.c===Pick.cat));
+  if(fill){
+    const t=pickTotals(); const set=(id,v)=>{const el=document.getElementById(id); if(el) el.value=v};
+    set("lg-n",Pick.items.map(({id,q})=>(q>1?q+"× ":"")+FOOD_BY_ID[id].n).join(" + "));
+    [["k","k"],["p","p"],["c","c"],["f","f"],["fi","fi"],["na","na"],["sug","sug"]].forEach(([fid,k])=>set("lg-"+fid,Pick.items.length?Math.round(t[k]):""));
+    FLAGS.forEach(([k])=>{const el=document.getElementById("lg-fl-"+k); if(el&&k!=="skip") el.checked=t.flags.has(k)});
+  }
+}
+function logFormHTML(x,log){
+  const v=(k,d="")=>log&&log[k]!=null?log[k]:d;
+  const f=log?.flags||[];
+  return `<form class="logform" id="logform" data-k="${x.meal.k}" novalidate>
+    <span class="eyebrow">What did you eat instead?</span>
+    <input type="search" id="lg-search" placeholder="Search foods, e.g. burrito, latte, pizza" autocomplete="off" value="${esc(Pick.q)}" aria-label="Search foods">
+    <div class="cats">${FOOD_CATS.map((c,i)=>`<button type="button" class="chip" data-act="pickcat" data-c="${i}" aria-pressed="${!Pick.q&&i===Pick.cat}">${c}</button>`).join("")}</div>
+    <div class="foodlist" id="pick-list">${pickerListHTML()}</div>
+    <div class="pickbox"><span class="eyebrow">Your meal</span><div id="picked">${pickedHTML()}</div></div>
+    <div class="actsrow"><button type="button" class="btn ghost" data-act="skipmeal">I skipped this meal</button></div>
+    <details class="manual" ${log&&!(log.items||[]).length?"open":""}><summary>Edit the name and numbers</summary>
+      <p class="small muted">Filled in from your picks; numbers are typical estimates. Change anything you know better, or type a meal that isn't in the list.</p>
+      <div class="field"><label for="lg-n">Meal</label><input type="text" id="lg-n" value="${esc(v("n"))}" placeholder="e.g. Chicken burrito bowl"></div>
+      <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(96px,1fr))">
+        ${[["k","Calories"],["p","Protein (g)"],["c","Carbs (g)"],["f","Fat (g)"],["fi","Fiber (g)"],["na","Sodium (mg)"],["sug","Sugar (g)"]].map(([k,l])=>`<div class="field"><label for="lg-${k}">${l}</label><input type="number" id="lg-${k}" min="0" step="1" inputmode="numeric" value="${v(k)===""?"":Math.round(v(k))}"></div>`).join("")}
+      </div>
+      <div class="chips">${FLAGS.filter(([k])=>k!=="skip").map(([k,l])=>`<label class="chip check"><input type="checkbox" id="lg-fl-${k}" ${f.includes(k)?"checked":""}> ${l}</label>`).join("")}</div>
+    </details>
+    <div class="acts"><button class="btn primary" type="submit">Save and compare</button><button class="btn ghost" type="button" data-act="logcancel">Cancel</button></div>
+  </form>`;
+}
+function readLogForm(){
+  const g=id=>document.getElementById(id); const n=id=>{const v=g(id)?.value;return v===""||v==null?null:Math.max(0,+v)};
+  const flags=FLAGS.map(([k])=>k).filter(k=>k!=="skip"&&g("lg-fl-"+k)?.checked);
+  return {n:(g("lg-n")?.value||"").trim(),k:n("lg-k"),p:n("lg-p"),c:n("lg-c"),f:n("lg-f"),fi:n("lg-fi"),na:n("lg-na"),sug:n("lg-sug"),flags,items:Pick.items.map(i=>({...i})),at:Date.now()};
+}
 
 function weekMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d}
 function dateOf(dayIdx){const d=weekMonday();d.setDate(d.getDate()+dayIdx);return d}
@@ -982,27 +1163,6 @@ function compareHTML(x,log,t){
     ${diff<-4&&x.r?`<p class="small muted">Next time, ${esc(x.r.n.toLowerCase())} would keep you closer to your plan. No stress; one meal doesn't undo a week.</p>`:""}
     <div class="acts"><button class="btn" data-act="logopen" data-k="${x.meal.k}">Edit</button><button class="btn ghost" data-act="logdel" data-k="${x.meal.k}">Back to planned meal</button></div>
   </div>`;
-}
-function logFormHTML(x,log){
-  const v=(k,d="")=>log&&log[k]!=null?log[k]:d;
-  const f=log?.flags||[];
-  return `<form class="logform" id="logform" data-k="${x.meal.k}" novalidate>
-    <span class="eyebrow">What did you eat instead?</span>
-    <div class="presets">${MEAL_PRESETS.map((m,i)=>`<button type="button" class="chip" data-act="preset" data-i="${i}">${esc(m.n)}</button>`).join("")}</div>
-    <p class="small muted">Tap a preset for typical numbers, then adjust. Check a nutrition label or menu if you can.</p>
-    <div class="field"><label for="lg-n">Meal</label><input type="text" id="lg-n" value="${esc(v("n"))}" placeholder="e.g. Chicken burrito bowl" required></div>
-    <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(96px,1fr))">
-      ${[["k","Calories"],["p","Protein (g)"],["c","Carbs (g)"],["f","Fat (g)"],["fi","Fiber (g)"],["na","Sodium (mg)"],["sug","Sugar (g)"]].map(([k,l])=>`<div class="field"><label for="lg-${k}">${l}</label><input type="number" id="lg-${k}" min="0" step="1" inputmode="numeric" value="${v(k)===""?"":Math.round(v(k))}"></div>`).join("")}
-    </div>
-    <div class="chips">${FLAGS.map(([k,l])=>`<label class="chip check"><input type="checkbox" id="lg-fl-${k}" ${f.includes(k)?"checked":""}> ${l}</label>`).join("")}</div>
-    <div class="acts"><button class="btn primary" type="submit">Save and compare</button><button class="btn ghost" type="button" data-act="logcancel">Cancel</button></div>
-  </form>`;
-}
-function readLogForm(){
-  const g=id=>document.getElementById(id); const n=id=>{const v=g(id)?.value;return v===""||v==null?null:Math.max(0,+v)};
-  const flags=FLAGS.map(([k])=>k).filter(k=>g("lg-fl-"+k)?.checked);
-  const m={n:(g("lg-n")?.value||"").trim(),k:n("lg-k"),p:n("lg-p"),c:n("lg-c"),f:n("lg-f"),fi:n("lg-fi"),na:n("lg-na"),sug:n("lg-sug"),flags,at:Date.now()};
-  return m;
 }
 
 /* ---- profile ---- */
@@ -1297,12 +1457,13 @@ document.addEventListener("click",e=>{
     if(id==="vegan"&&i<0){S.draft.restrictions=S.draft.restrictions.filter(x=>!["vegetarian","pescatarian"].includes(x))}
     if((id==="vegetarian"||id==="pescatarian")&&i<0){S.draft.restrictions=S.draft.restrictions.filter(x=>x==="vegetarian"||x==="pescatarian"?x===id:x!=="vegan")}
     render()}
-  if(a==="logopen"){S.logOpen=b.dataset.k;render();document.getElementById("lg-n")?.focus()}
+  if(a==="logopen"){S.logOpen=b.dataset.k;const lg=S.logs[logKey(S.day,b.dataset.k)];Pick.items=(lg?.items||[]).map(i=>({...i}));Pick.q="";Pick.cat=0;render();document.querySelector(".logform")?.scrollIntoView({block:"start",behavior:"smooth"})}
+  if(a==="pick"){const it=Pick.items.find(i=>i.id===b.dataset.id); if(it) it.q++; else Pick.items.push({id:b.dataset.id,q:1}); refreshPicker(true)}
+  if(a==="pickq"){const it=Pick.items.find(i=>i.id===b.dataset.id); if(it){it.q+=+b.dataset.d; if(it.q<=0) Pick.items=Pick.items.filter(i=>i!==it);} refreshPicker(true)}
+  if(a==="pickcat"){Pick.cat=+b.dataset.c;Pick.q="";const sIn=document.getElementById("lg-search");if(sIn) sIn.value="";refreshPicker(false)}
+  if(a==="skipmeal"){const k=b.closest("form").dataset.k;S.logs[logKey(S.day,k)]={n:"Skipped",k:0,p:0,c:0,f:0,fi:0,na:0,sug:0,flags:["skip"],items:[],at:Date.now()};S.logOpen=null;saveLogs();render();toast("Logged as skipped")}
   if(a==="logcancel"){S.logOpen=null;render()}
   if(a==="logdel"){delete S.logs[logKey(S.day,b.dataset.k)];saveLogs();render();toast("Back to the planned meal")}
-  if(a==="preset"){const m=MEAL_PRESETS[+b.dataset.i];const set=(id,v)=>{const el=document.getElementById(id);if(el) el.value=v};
-    set("lg-n",m.fl.includes("skip")?"Skipped":m.n);["k","p","c","f","fi","na","sug"].forEach(k=>set("lg-"+k,m[k]));
-    FLAGS.forEach(([k])=>{const el=document.getElementById("lg-fl-"+k);if(el) el.checked=m.fl.includes(k)})}
   if(a==="cookfor"){S.cookFor=clamp((S.cookFor||1)+(+b.dataset.d),1,8);ls.set("cookFor",S.cookFor);render()}
   if(a==="camera"){openCamera()}
   if(a==="closecam"){closeCamera()}
@@ -1315,17 +1476,16 @@ document.addEventListener("change",e=>{
   if(e.target.dataset.act==="check"){const c=ls.get("checked")||{};const n=e.target.dataset.n;c[n]=e.target.checked;ls.set("checked",c);e.target.closest("label").classList.toggle("done",e.target.checked)}
   if(e.target.id==="f-pace"||e.target.id==="f-act"||e.target.id==="f-sex"){readNumbers();render()}
 });
-document.addEventListener("input",e=>{ if(e.target.id==="f-strict"){readNumbers();render();document.getElementById("f-strict")?.focus()} });
+document.addEventListener("input",e=>{ if(e.target.id==="lg-search"){Pick.q=e.target.value;refreshPicker(false);return} if(e.target.id==="f-strict"){readNumbers();render();document.getElementById("f-strict")?.focus()} });
 document.addEventListener("submit",e=>{
   e.preventDefault();
   if(e.target.id==="pform"){readNumbers();const d=S.draft;
     if(!d.weightKg||!d.heightCm||!d.age){toast("Add your weight, height and age first");return}
     S.profile=JSON.parse(JSON.stringify(d));S.isExample=false;S.overrides={};S.seed=Math.floor(Math.random()*1e9);S.draft=null;persistPlan();S.tab="plan";render();window.scrollTo({top:0});toast("Profile saved. Your plan is ready.")}
   if(e.target.id==="codeform"){lookupBarcode($("#code").value)}
-  if(e.target.id==="logform"){const m=readLogForm(); const skip=m.flags.includes("skip");
-    if(!m.n&&!skip){toast("Name what you ate");return}
-    if(m.k==null&&!skip){toast("Add the calories (a preset can fill an estimate)");return}
-    ["k","p","c","f","fi","na"].forEach(k=>{if(m[k]==null) m[k]=0}); if(skip&&!m.n) m.n="Skipped";
+  if(e.target.id==="logform"){const m=readLogForm();
+    if(!m.n||m.k==null){toast(Pick.items.length?"Add the calories under “Edit the name and numbers”":"Tap the foods you ate, or type the meal under “Edit the name and numbers”");return}
+    ["k","p","c","f","fi","na"].forEach(k=>{if(m[k]==null) m[k]=0});
     const k=e.target.dataset.k; S.logs[logKey(S.day,k)]=m; S.logOpen=null; saveLogs(); render(); toast("Logged. Here's how it compares.")}
   if(e.target.id==="manual"){const input=readManual(); if(["kcal","sugar","satFat","sodium","fiber","protein"].every(k=>input[k]==="")){toast("Enter at least one number from the label");return}
     S.manualName=""; showProduct({input,n:per100(input),off:null,at:Date.now()})}
