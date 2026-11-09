@@ -21,9 +21,9 @@
 /* Layout: a single-column app shell (max ~980px) with a sticky header + tab bar; cards only for meals and scan results. */
 :root{
   --bg:#F3F5EF; --surface:#FFFFFF; --sunk:#E9EDE4; --ink:#17221B; --muted:#58675D; --line:#D8DFD3;
-  --accent:#7A2E55; --accent-ink:#FFFFFF; --accent-soft:#F2E4EB;
-  --exc:#1E8549; --good:#5E9B2F; --poor:#D27E12; --bad:#C23E2C;
-  --exc-soft:#DDF1E4; --good-soft:#E8F3DC; --poor-soft:#FBEBD3; --bad-soft:#F8DEDA;
+  --accent:#C2410C; --accent-ink:#FFFFFF; --accent-soft:#FDE9DC;
+  --exc:#1E8549; --good:#5E9B2F; --poor:#A87C00; --bad:#C23E2C;
+  --exc-soft:#DDF1E4; --good-soft:#E8F3DC; --poor-soft:#FBF1C7; --bad-soft:#F8DEDA;
   --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body:"Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -31,15 +31,15 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0F1511; --surface:#172019; --sunk:#1D2820; --ink:#E6EDE7; --muted:#9BAAA0; --line:#2B382F;
-  --accent:#E79CC2; --accent-ink:#2A0F1E; --accent-soft:#3A2130;
-  --exc:#4CC27D; --good:#94C95F; --poor:#F0A64A; --bad:#F07562;
-  --exc-soft:#173823; --good-soft:#243319; --poor-soft:#3A2A12; --bad-soft:#3E1D18;
+  --accent:#FB8A3C; --accent-ink:#2A1205; --accent-soft:#3A2416;
+  --exc:#4CC27D; --good:#94C95F; --poor:#E3C14B; --bad:#F07562;
+  --exc-soft:#173823; --good-soft:#243319; --poor-soft:#363013; --bad-soft:#3E1D18;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1511; --surface:#172019; --sunk:#1D2820; --ink:#E6EDE7; --muted:#9BAAA0; --line:#2B382F;
-  --accent:#E79CC2; --accent-ink:#2A0F1E; --accent-soft:#3A2130;
-  --exc:#4CC27D; --good:#94C95F; --poor:#F0A64A; --bad:#F07562;
-  --exc-soft:#173823; --good-soft:#243319; --poor-soft:#3A2A12; --bad-soft:#3E1D18;
+  --accent:#FB8A3C; --accent-ink:#2A1205; --accent-soft:#3A2416;
+  --exc:#4CC27D; --good:#94C95F; --poor:#E3C14B; --bad:#F07562;
+  --exc-soft:#173823; --good-soft:#243319; --poor-soft:#363013; --bad-soft:#3E1D18;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
@@ -261,7 +261,7 @@ a{color:var(--accent)}
 #cam{position:fixed;inset:0;z-index:30;background:#000;display:flex;align-items:center;justify-content:center}
 #cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #cam .frame{position:relative;width:min(80vw,420px);aspect-ratio:1.8;border:3px solid #fff;border-radius:16px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
-#cam .frame::after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2px;background:#ff5a8a;box-shadow:0 0 8px #ff5a8a}
+#cam .frame::after{content:"";position:absolute;left:8%;right:8%;top:50%;height:2px;background:#ff8a3d;box-shadow:0 0 8px #ff8a3d}
 #camhint{position:absolute;left:0;right:0;bottom:calc(40px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;font-weight:600;padding:0 24px}
 #cam .close{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:calc(16px + env(safe-area-inset-right,0px));background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer}
 
